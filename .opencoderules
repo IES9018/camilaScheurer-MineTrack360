@@ -1,0 +1,18 @@
+# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018)
+
+## 1. Alcance permitido
+- Solo archivos del presente repositorio. Prohibido operar sobre repos de la cátedra.
+- Solo tocar: backend/src (NestJS), frontend/src (React), docs/, .github/.
+- Prohibido modificar: migraciones ya aplicadas, docker-compose.yml sin aprobación previa.
+
+## 2. Estándares técnicos obligatorios
+- TypeScript con "strict": true en backend y frontend.
+- Commits convencionales (feat|fix|docs|chore|refactor|test:).
+- Tests Jest obligatorios para todo servicio de dominio nuevo (cobertura ≥ 70% en módulos críticos).
+- Endpoints versionados /api/v1 y documentados con decoradores Swagger.
+
+## 3. Prácticas prohibidas
+- Tipo `any` (explícito o implícito).
+- Dependencias nuevas sin declaración y justificación en el PR.
+- Credenciales, tokens o connection strings en el código (usar variables de entorno).
+- Push directo a main/develop; desactivar hooks de husky/lint-staged.
