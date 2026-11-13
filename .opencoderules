@@ -1,8 +1,9 @@
-# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018)
+# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018) · v2
 
 ## 1. Alcance permitido
 - Solo archivos del presente repositorio. Prohibido operar sobre repos de la cátedra.
-- Solo tocar: backend/src (NestJS), frontend/src (React), docs/, .github/.
+- Solo tocar: backend/src (NestJS), frontend/src (React), docs/, .github/ y SPEC.md (toda modificación de SPEC.md lleva su entrada en el Changelog).
+- Prohibido que el asistente modifique este archivo (.opencoderules): lo edita solo el estudiante.
 - Prohibido modificar: migraciones ya aplicadas, docker-compose.yml sin aprobación previa.
 
 ## 2. Estándares técnicos obligatorios
@@ -14,5 +15,6 @@
 ## 3. Prácticas prohibidas
 - Tipo `any` (explícito o implícito).
 - Dependencias nuevas sin declaración y justificación en el PR.
+- Introducir frameworks, bases de datos o servicios externos que no estén declarados en un ADR aprobado. Ante la duda, proponer un ADR nuevo antes de escribir código.
 - Credenciales, tokens o connection strings en el código (usar variables de entorno).
 - Push directo a main/develop; desactivar hooks de husky/lint-staged.
