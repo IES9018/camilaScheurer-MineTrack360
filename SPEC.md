@@ -51,7 +51,7 @@ interface LecturaTelemetria {                                        // TELEMETR
 }
 interface RegistroMantenimiento { id: number; vehiculoId: number; tipo: string; fecha: Date; costo: number; repuestos: string; responsableId: number; }
 interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; estado: string; }  // SHIFT_ASSIGNMENT
-
+```
 ## 6. Criterios de Aceptación
 - [ ] **CA-01:** Un usuario válido obtiene JWT y accede solo a los módulos de su rol (RF-01/02).
 - [ ] **CA-02:** Un mensaje MQTT publicado en telemetry/+/data se persiste y su posición aparece en el mapa (RF-03/04).
