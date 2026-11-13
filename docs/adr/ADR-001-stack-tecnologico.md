@@ -1,7 +1,7 @@
 # ADR-001: Stack tecnológico de MineTrack360
 
 **Fecha:** 2026-09-15
-**Estado:** Propuesto
+**Estado:** Aceptado
 
 ## Contexto
 MineTrack360 requiere ingesta de telemetría de alta frecuencia (≥50 msg/s),

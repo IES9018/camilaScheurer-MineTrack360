@@ -1,35 +1,24 @@
----
-name: "📬 Pull Request"
-about: "Envianos tu contribución al repositorio"
-title: "tipo(scope): descripción breve"
-labels: ""
-assignees: ""
----
+## Descripción de Cambios
+<!-- Resumen conciso de los cambios implementados y su motivación técnica -->
 
-## 📋 Descripción
+## Tipo de Cambio
+- [ ] `feat`: Nueva funcionalidad de negocio o automatización
+- [ ] `fix`: Corrección de error/bug
+- [ ] `refactor`: Refactorización de código sin cambio de comportamiento
+- [ ] `ci`: Cambios en canalizaciones de CI/CD o Workflows
+- [ ] `docs`: Documentación de arquitectura, auditoría o contratos
 
-Explicá qué cambia este PR y por qué.
+## Trazabilidad de Issue
+Closes #<!-- Número de Issue vinculada en GitHub Projects -->
 
-## 🔗 Issue relacionado
+## Checklists de Supervisión Crítica
+### Quality & Security Gate
+- [ ] El código no expone credenciales, tokens ni datos sensibles (`secrets`).
+- [ ] Se han validado las entradas de datos contra vulnerabilidades de inyección.
+- [ ] Todo el código generado o asistido por IA fue auditado línea por línea por el estudiante.
+- [ ] Se ejecutaron pruebas unitarias/de integración locales exitosamente.
 
-Si este PR resuelve un Issue, mencionalo: Fixes #N
-
-## ✅ Checklist antes de solicitar revisión
-
-- [ ] Leí la guía de contribución (`CONTRIBUTING.md`)
-- [ ] Verifiqué que los cambios no rompen nada existente
-- [ ] Si agrego contenido, usé el mismo formato y estilo que el resto del repo
-- [ ] Si agrego una analogía, la probé con alguien que no sabe del tema
-- [ ] Los links que agregué funcionan
-
-## 🧪 Cómo probar los cambios
-
-Pasos para verificar que el cambio funciona correctamente.
-
-## 📸 Capturas (si aplica)
-
-Agregá imágenes que ayuden a entender el cambio.
-
----
-
-**Contribuido por:** [tu nombre o usuario de GitHub]
+### Git Flow & Convenciones
+- [ ] Commits bajo convención (`feat:`, `fix:`, `ci:`, `docs:`).
+- [ ] La rama origen sigue la nomenclatura `feature/`, `bugfix/` o `hotfix/`.
+- [ ] Sin conflictos de merge con `develop`.
