@@ -7,3 +7,7 @@ __pycache__/
 target/
 .idea/
 .vscode/
+# Artefactos de build y cobertura
+dist/
+coverage/
+*.tsbuildinfo
