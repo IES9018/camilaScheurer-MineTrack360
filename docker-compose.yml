@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  # Base de datos relacional + extensión de series temporales,
+  # según Sección 3.3 y 7.1 del informe.
+  db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: minetrack360-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Cache de consultas frecuentes y broker auxiliar de colas (BullMQ).
+  redis:
+    image: redis:7-alpine
+    container_name: minetrack360-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # Broker MQTT para la ingesta de telemetría IoT (patrón Pub/Sub).
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: minetrack360-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+
+  # Contenedor de desarrollo: acá es donde VS Code se va a "meter" a programar.
+  # No es un servicio del stack de producción, es nuestro entorno de trabajo.
+  backend-dev:
+    image: node:20-bullseye
+    container_name: minetrack360-backend-dev
+    restart: unless-stopped
+    command: sleep infinity
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - MQTT_URL=${MQTT_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+      - mosquitto
+
+volumes:
+  db_data:
+  mosquitto_data:
+  mosquitto_log:
+
+# NOTA: el servicio "frontend" se agregará en la Fase 3.
+# El servicio "api" de producción (con su propio Dockerfile multi-stage)
+# se agregará en el Paso final de la Fase 1, reemplazando a backend-dev
+# para el despliegue — backend-dev es solo nuestro entorno de codificación.
