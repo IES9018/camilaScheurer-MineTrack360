@@ -74,3 +74,11 @@ Criterios: (a) integridad referencial, (b) consultas entre tablas, (c) escritura
 Si la medición de CA-04 sobre la hypertable no alcanza el objetivo, o si aparecen datos sin esquema
 (por ejemplo, payloads heterogéneos de sensores) que no se puedan modelar como columnas. Se registraría
 con un ADR nuevo que supersede a este.
+
+## Actualización (2026-11-14): `MAINTENANCE_THRESHOLD` implementada
+La tabla `maintenance_thresholds` ya existe (migración `1794703200000-CreateMaintenanceThresholds.ts`): `vehicle_type_id`
+único con clave foránea a `vehicle_types`, e `interval_hours` mayor a 0. La misma migración agrega `vehicles.last_service_hours`
+con la restricción `last_service_hours <= total_engine_hours`. La clave foránea se declara solo en la migración, para que el
+módulo Maintenance no importe entidades de Vehicles (ADR-002, regla 1); por eso `migration:generate` podría proponer
+quitarla: hay que revisar el resultado antes de aceptarlo. Siguen sin implementar `RegistroMantenimiento`,
+`AsignacionTurno` y `LecturaTelemetria`.

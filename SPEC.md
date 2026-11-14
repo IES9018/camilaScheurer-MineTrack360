@@ -44,7 +44,7 @@ tablero de indicadores.
 ## 5. Contratos de Datos / Tipos
 ```typescript
 // Entidades principales derivadas del modelo ER de PP2 (3FN)
-interface Vehiculo { id: number; patente: string; tipoId: number; estado: 'ACTIVE' | 'MAINTENANCE' | 'OUT_OF_SERVICE'; }
+interface Vehiculo { id: number; patente: string; tipoId: number; estado: 'ACTIVE' | 'MAINTENANCE' | 'OUT_OF_SERVICE'; horasUltimoServicio: number; }
 interface TipoVehiculo { id: number; categoria: string; }            // VEHICLE_TYPE
 interface UmbralMantenimiento { tipoVehiculoId: number; intervaloHoras: number; }  // MAINTENANCE_THRESHOLD
 interface LecturaTelemetria {                                        // TELEMETRY_READING (hypertable)
@@ -131,7 +131,7 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 ```
 
 **Dependencias y riesgos del diseño**
-- Las reglas de P2 requieren `SHIFT_ASSIGNMENT` y su endpoint (hoy inexistentes); P1 requiere `MAINTENANCE_THRESHOLD` para listar por vehículo. Ambos necesitan migración aprobada.
+- Las reglas de P2 requieren `SHIFT_ASSIGNMENT` y su endpoint (hoy inexistentes); P1 ya cuenta con `MAINTENANCE_THRESHOLD` y con `GET /api/v1/maintenance/alerts` (Sprint 2, PR de RF-05 persistido); `SHIFT_ASSIGNMENT` sigue pendiente y necesita migración aprobada.
 - El permiso actual de `threshold-evaluation` excluye a `hse` y `lectura`; el escenario "Rol sin permiso" asume mantenerlo.
 - El estado "no disponible por alerta crítica" en P2 supone que RF-05 expone el estado por vehículo (HU-04 del informe PP2).
 
@@ -166,3 +166,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-13 | Nueva sección 6.1: escenarios Gherkin de P1 (RF-05), P2 (RF-07) y RF-12, con dependencias y riesgos | TP3: criterios de aceptación de interfaz |
 | v3 | 2026-11-13 | Sección 7: agregada R-08 (TailwindCSS) que cita ADR-004 | TP3: decisión de stack de UI |
 | v3 | 2026-11-13 | Sección 4 y R-05: Node 24 alineado en CI, `docker-compose.yml` y README; R-05 pasa a «Vigente (alineado)» | Sprint 2: cerrar la inconsistencia Node 20 vs 24 |
+| v3 | 2026-11-14 | Sección 5: `Vehiculo` agrega `horasUltimoServicio` (columna `last_service_hours`); `UmbralMantenimiento` pasa a estar implementado (`maintenance_thresholds`). Sección 6.1: P1 ya cuenta con su endpoint de alertas | Sprint 2: RF-05 persistido. Las horas del último servicio no existían y RF-05 las necesita; RF-06 las actualizará |

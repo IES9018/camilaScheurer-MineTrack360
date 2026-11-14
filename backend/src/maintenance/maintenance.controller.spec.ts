@@ -13,6 +13,8 @@ import type {
   AuthenticatedRequest,
   JwtPayload,
 } from '../auth/jwt-payload.interface';
+import type { FleetAlertDto } from './dto/fleet-alert.dto';
+import { MaintenanceAlertsService } from './maintenance-alerts.service';
 import { MaintenanceController } from './maintenance.controller';
 import { MaintenanceService } from './maintenance.service';
 
@@ -20,6 +22,25 @@ import { MaintenanceService } from './maintenance.service';
  * Reemplazo de JwtAuthGuard para no depender de JWT_SECRET ni de la base de
  * datos: el rol llega en la cabecera x-test-role. RolesGuard es el real.
  */
+/** Respuesta fija del servicio de alertas: acá se prueban rutas, roles y validación. */
+const sampleAlert: FleetAlertDto = {
+  vehicleId: 14,
+  internalCode: 'CAM-014',
+  vehicleTypeName: 'Camión',
+  vehicleStatus: 'ACTIVE',
+  totalEngineHours: 1005,
+  lastServiceHours: 500,
+  hoursSinceService: 505,
+  intervalHours: 500,
+  ratio: 1.01,
+  status: 'CRITICAL',
+};
+const alertsStub = {
+  getFleetAlerts: () => Promise.resolve([sampleAlert]),
+  setThreshold: (vehicleTypeId: number, intervalHours: number) =>
+    Promise.resolve({ vehicleTypeId, intervalHours }),
+};
+
 class FakeJwtAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -44,7 +65,10 @@ describe('POST /api/v1/maintenance/threshold-evaluation', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [MaintenanceController],
-      providers: [MaintenanceService],
+      providers: [
+        MaintenanceService,
+        { provide: MaintenanceAlertsService, useValue: alertsStub },
+      ],
     })
       .overrideGuard(JwtAuthGuard)
       .useClass(FakeJwtAuthGuard)
@@ -141,6 +165,121 @@ describe('POST /api/v1/maintenance/threshold-evaluation', () => {
       .post(url)
       .set('x-test-role', 'admin')
       .send({ ...validBody, lastServiceHours: 5000 })
+      .expect(400);
+  });
+});
+
+describe('GET /api/v1/maintenance/alerts', () => {
+  let app: INestApplication<App>;
+  const url = '/api/v1/maintenance/alerts';
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      controllers: [MaintenanceController],
+      providers: [
+        MaintenanceService,
+        { provide: MaintenanceAlertsService, useValue: alertsStub },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useClass(FakeJwtAuthGuard)
+      .compile();
+    app = moduleRef.createNestApplication<INestApplication<App>>();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it.each(['admin', 'supervisor', 'mantenimiento'])(
+    'responde 200 con la lista de alertas para el rol %s',
+    async (role) => {
+      const res = await request(app.getHttpServer())
+        .get(url)
+        .set('x-test-role', role)
+        .expect(200);
+
+      expect(res.body).toEqual([sampleAlert]);
+    },
+  );
+
+  it('responde 401 sin autenticación', async () => {
+    await request(app.getHttpServer()).get(url).expect(401);
+  });
+
+  it.each(['hse', 'lectura'])('responde 403 para el rol %s', async (role) => {
+    await request(app.getHttpServer())
+      .get(url)
+      .set('x-test-role', role)
+      .expect(403);
+  });
+});
+
+describe('PUT /api/v1/maintenance/thresholds/:vehicleTypeId', () => {
+  let app: INestApplication<App>;
+  const url = '/api/v1/maintenance/thresholds/2';
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      controllers: [MaintenanceController],
+      providers: [
+        MaintenanceService,
+        { provide: MaintenanceAlertsService, useValue: alertsStub },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useClass(FakeJwtAuthGuard)
+      .compile();
+    app = moduleRef.createNestApplication<INestApplication<App>>();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('responde 200 con el umbral guardado para el rol admin', async () => {
+    const res = await request(app.getHttpServer())
+      .put(url)
+      .set('x-test-role', 'admin')
+      .send({ intervalHours: 750 })
+      .expect(200);
+
+    expect(res.body).toEqual({ vehicleTypeId: 2, intervalHours: 750 });
+  });
+
+  it.each(['supervisor', 'mantenimiento', 'hse', 'lectura'])(
+    'responde 403 para el rol %s: solo admin configura umbrales',
+    async (role) => {
+      await request(app.getHttpServer())
+        .put(url)
+        .set('x-test-role', role)
+        .send({ intervalHours: 750 })
+        .expect(403);
+    },
+  );
+
+  it.each([0, -5])('responde 400 con intervalHours = %d', async (value) => {
+    await request(app.getHttpServer())
+      .put(url)
+      .set('x-test-role', 'admin')
+      .send({ intervalHours: value })
+      .expect(400);
+  });
+
+  it('responde 400 si el id del tipo no es numérico', async () => {
+    await request(app.getHttpServer())
+      .put('/api/v1/maintenance/thresholds/abc')
+      .set('x-test-role', 'admin')
+      .send({ intervalHours: 500 })
       .expect(400);
   });
 });
