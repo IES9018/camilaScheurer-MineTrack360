@@ -1,7 +1,7 @@
 # P2 — Asignación de turno (RF-07, HU-04)
 
 > **Versión:** v1 (corregida tras la auditoría). Hallazgos H-P2-n en [`../auditoria-heuristica.md`](../auditoria-heuristica.md).
-> **Dependencia declarada:** la tabla `SHIFT_ASSIGNMENT` (SPEC §5) y el endpoint de asignación **no existen todavía**; esta pantalla define el contrato que el backend deberá cumplir (se implementa en Sprint 2 con migración aprobada).
+> **Backend (Sprint 2):** la tabla `shift_assignments`, `GET /api/v1/shifts/availability`, `POST /api/v1/shifts/assignments` y `PATCH /api/v1/shifts/assignments/:id/cancel` ya existen. Los motivos de bloqueo del API (`NOT_ACTIVE`, `CRITICAL_ALERT`, `ALREADY_ASSIGNED`) corresponden a los mensajes de esta pantalla. Falta implementar la interfaz web.
 > **Acceso:** rol `supervisor` y `admin`. `mantenimiento` recibe "permisos insuficientes" (HU-07 del informe).
 
 ## Versión inicial (v0)
