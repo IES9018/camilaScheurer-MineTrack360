@@ -82,3 +82,11 @@ con la restricción `last_service_hours <= total_engine_hours`. La clave foráne
 módulo Maintenance no importe entidades de Vehicles (ADR-002, regla 1); por eso `migration:generate` podría proponer
 quitarla: hay que revisar el resultado antes de aceptarlo. Siguen sin implementar `RegistroMantenimiento`,
 `AsignacionTurno` y `LecturaTelemetria`.
+
+## Actualización (2026-11-14): `OPERATOR` y `SHIFT_ASSIGNMENT` implementadas
+La migración `1794790800000-CreateShifts.ts` crea `operators` y `shift_assignments`. La integridad de RF-07 («evitando
+duplicados») la garantiza la base con dos índices únicos **parciales** (`WHERE status = 'ASSIGNED'`): un mismo vehículo, o
+un mismo operador, no puede tener dos asignaciones vigentes en la misma fecha y turno. Las asignaciones canceladas quedan
+como historial y liberan el cupo. Esto es una de las ventajas de PostgreSQL frente a las alternativas descartadas (criterio a):
+se verificó con 8 pedidos simultáneos sobre el mismo cupo, de los que solo uno se guardó. Las claves foráneas hacia `vehicles` y
+`user_accounts` se declaran solo en la migración (ADR-002, regla 1). Sigue sin implementar `LecturaTelemetria` y `RegistroMantenimiento`.

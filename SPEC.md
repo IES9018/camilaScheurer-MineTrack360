@@ -53,7 +53,8 @@ interface LecturaTelemetria {                                        // TELEMETR
   temperaturaMotorC: number; horasUso: number;
 }
 interface RegistroMantenimiento { id: number; vehiculoId: number; tipo: string; fecha: Date; costo: number; repuestos: string; responsableId: number; }
-interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; estado: string; }  // SHIFT_ASSIGNMENT
+interface Operador { id: number; nombreCompleto: string; legajo: string; activo: boolean; }  // OPERATOR (chofer; no inicia sesión)
+interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; fecha: string; turno: 'MORNING' | 'AFTERNOON' | 'NIGHT'; estado: 'ASSIGNED' | 'CANCELLED'; }  // SHIFT_ASSIGNMENT
 ```
 ## 6. Criterios de Aceptación
 - [ ] **CA-01:** Un usuario válido obtiene JWT y accede solo a los módulos de su rol (RF-01/02).
@@ -131,9 +132,10 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 ```
 
 **Dependencias y riesgos del diseño**
-- Las reglas de P2 requieren `SHIFT_ASSIGNMENT` y su endpoint (hoy inexistentes); P1 ya cuenta con `MAINTENANCE_THRESHOLD` y con `GET /api/v1/maintenance/alerts` (Sprint 2, PR de RF-05 persistido); `SHIFT_ASSIGNMENT` sigue pendiente y necesita migración aprobada.
+- P1 cuenta con `MAINTENANCE_THRESHOLD` y `GET /api/v1/maintenance/alerts`; P2 cuenta con `operators`, `shift_assignments` y los endpoints de `/api/v1/shifts` y `/api/v1/operators` (Sprint 2). Falta la interfaz web de ambas pantallas.
 - El permiso actual de `threshold-evaluation` excluye a `hse` y `lectura`; el escenario "Rol sin permiso" asume mantenerlo.
-- El estado "no disponible por alerta crítica" en P2 supone que RF-05 expone el estado por vehículo (HU-04 del informe PP2).
+- El estado "no disponible por alerta crítica" en P2 usa el estado de RF-05 por vehículo (HU-04 del informe PP2): lo informa `GET /api/v1/shifts/availability` con el motivo `CRITICAL_ALERT`.
+- Decisión de modelado: los operadores son una tabla propia (`operators`), no usuarios con rol, porque los roles de RF-02 no incluyen "operador" y los choferes no inician sesión en esta etapa.
 
 ## 7. Restricciones Arquitectónicas
 
@@ -167,3 +169,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-13 | Sección 7: agregada R-08 (TailwindCSS) que cita ADR-004 | TP3: decisión de stack de UI |
 | v3 | 2026-11-13 | Sección 4 y R-05: Node 24 alineado en CI, `docker-compose.yml` y README; R-05 pasa a «Vigente (alineado)» | Sprint 2: cerrar la inconsistencia Node 20 vs 24 |
 | v3 | 2026-11-14 | Sección 5: `Vehiculo` agrega `horasUltimoServicio` (columna `last_service_hours`); `UmbralMantenimiento` pasa a estar implementado (`maintenance_thresholds`). Sección 6.1: P1 ya cuenta con su endpoint de alertas | Sprint 2: RF-05 persistido. Las horas del último servicio no existían y RF-05 las necesita; RF-06 las actualizará |
+| v3 | 2026-11-14 | Sección 5: nuevo contrato `Operador`; `AsignacionTurno` agrega `fecha` y `turno` y fija `estado` en `ASSIGNED`/`CANCELLED`. Sección 6.1: P2 ya cuenta con sus endpoints | Sprint 2: RF-07 (asignación de turnos sin duplicados). El informe PP2 nombra `operator_id` pero no define a qué entidad apunta; se modela como tabla propia |

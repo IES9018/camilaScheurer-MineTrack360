@@ -19,8 +19,8 @@ flowchart TB
 
     subgraph sys["MineTrack360 (monolito modular, ADR-002)"]
         web["Frontend web<br/>React 18 + TypeScript + Vite<br/>🔜 planificado"]
-        api["API REST<br/>NestJS + TypeScript<br/>módulos: auth, vehicles, maintenance<br/>✅ implementado"]
-        db[("PostgreSQL 16 + TimescaleDB<br/>✅ 5 tablas relacionales<br/>🔜 hypertable de telemetría")]
+        api["API REST<br/>NestJS + TypeScript<br/>módulos: auth, vehicles, maintenance, shifts<br/>✅ implementado"]
+        db[("PostgreSQL 16 + TimescaleDB<br/>✅ 7 tablas relacionales<br/>🔜 hypertable de telemetría")]
         redis[("Redis<br/>cache + colas BullMQ<br/>🟡 declarado, sin uso en el código")]
         mqtt["Mosquitto<br/>broker MQTT<br/>🟡 declarado, sin integración en el código"]
     end
@@ -39,8 +39,8 @@ flowchart TB
 | Contenedor | Tecnología | Estado | Se justifica en |
 |---|---|---|---|
 | Frontend web | React 18, TypeScript, Vite, TailwindCSS, Zustand, Leaflet, Recharts | 🔜 (no existe `frontend/`) | `SPEC.md` §4; RF-04, RF-09 |
-| API REST | Node.js, NestJS, TypeScript; documentación OpenAPI/Swagger en `/api/docs` | ✅ módulos `auth`, `vehicles` y `maintenance` en `backend/src/` | `SPEC.md` §4; ADR-001; ADR-002 |
-| Base de datos | PostgreSQL 16 + TimescaleDB, ORM TypeORM | ✅ tablas `roles`, `user_accounts`, `vehicle_types`, `vehicles`, `maintenance_thresholds`; 🔜 hypertable `TELEMETRY_READING` (hoy solo se habilita la extensión) | `SPEC.md` §4 y §5; ADR-001; ADR-003 |
+| API REST | Node.js, NestJS, TypeScript; documentación OpenAPI/Swagger en `/api/docs` | ✅ módulos `auth`, `vehicles`, `maintenance` y `shifts` en `backend/src/` | `SPEC.md` §4; ADR-001; ADR-002 |
+| Base de datos | PostgreSQL 16 + TimescaleDB, ORM TypeORM | ✅ tablas `roles`, `user_accounts`, `vehicle_types`, `vehicles`, `maintenance_thresholds`, `operators`, `shift_assignments`; 🔜 hypertable `TELEMETRY_READING` (hoy solo se habilita la extensión) | `SPEC.md` §4 y §5; ADR-001; ADR-003 |
 | Redis | Redis (cache + BullMQ) | 🟡 servicio en `docker-compose.yml`; sin dependencia en `backend/package.json` | `SPEC.md` §4 |
 | Broker MQTT | Eclipse Mosquitto | 🟡 servicio y `mosquitto.conf` en el repo; sin cliente MQTT en el código | `SPEC.md` §4 (tópicos `telemetry/+/data`); RF-03 |
 

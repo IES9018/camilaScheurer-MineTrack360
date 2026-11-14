@@ -22,6 +22,6 @@ import { MaintenanceService } from './maintenance.service';
     MaintenanceAlertsService,
     MaintenanceThresholdsRepository,
   ],
-  exports: [MaintenanceService],
+  exports: [MaintenanceService, MaintenanceAlertsService],
 })
 export class MaintenanceModule {}
