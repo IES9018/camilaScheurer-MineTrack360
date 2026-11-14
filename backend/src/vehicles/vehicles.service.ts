@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
+import { FleetVehicleSnapshot } from './fleet-snapshot.interface';
 import { Vehicle } from './vehicle.entity';
 import { VehiclesRepository } from './vehicles.repository';
 
@@ -27,12 +28,38 @@ export class VehiclesService {
     return vehicle;
   }
 
+  /** Vista de la flota para otros módulos (ver `FleetVehicleSnapshot`). */
+  async findFleetSnapshot(): Promise<FleetVehicleSnapshot[]> {
+    const vehicles = await this.vehiclesRepository.findAll();
+    return vehicles.map((vehicle) => ({
+      id: vehicle.id,
+      internalCode: vehicle.internalCode,
+      vehicleTypeId: vehicle.vehicleType.id,
+      vehicleTypeName: vehicle.vehicleType.name,
+      status: vehicle.status,
+      totalEngineHours: vehicle.totalEngineHours,
+      lastServiceHours: vehicle.lastServiceHours,
+    }));
+  }
+
+  /** Indica si existe un tipo de vehículo con ese id. */
+  async vehicleTypeExists(id: number): Promise<boolean> {
+    return (await this.vehiclesRepository.findVehicleTypeById(id)) !== null;
+  }
+
   /**
    * Registra un vehículo nuevo.
-   * @throws BadRequestException si el tipo de vehículo no existe.
+   * @throws BadRequestException si el tipo de vehículo no existe o si las horas
+   * del último servicio superan las horas acumuladas.
    * @throws ConflictException si el código interno o la patente ya están en uso.
    */
   async create(dto: CreateVehicleDto): Promise<Vehicle> {
+    if ((dto.lastServiceHours ?? 0) > (dto.totalEngineHours ?? 0)) {
+      throw new BadRequestException(
+        'Las horas del último servicio no pueden superar las horas acumuladas',
+      );
+    }
+
     const vehicleType = await this.vehiclesRepository.findVehicleTypeById(
       dto.vehicleTypeId,
     );
@@ -57,6 +84,7 @@ export class VehiclesService {
       licensePlate: dto.licensePlate,
       vehicleType,
       totalEngineHours: dto.totalEngineHours,
+      lastServiceHours: dto.lastServiceHours,
       status: dto.status,
     });
 

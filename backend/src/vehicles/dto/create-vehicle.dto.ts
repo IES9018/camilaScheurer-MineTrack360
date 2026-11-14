@@ -39,6 +39,16 @@ export class CreateVehicleDto {
   @Min(0)
   totalEngineHours?: number;
 
+  @ApiPropertyOptional({
+    example: 0,
+    description:
+      'Horas de motor en el último servicio (no puede superar las acumuladas)',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  lastServiceHours?: number;
+
   @ApiPropertyOptional({ enum: VehicleStatus, default: VehicleStatus.ACTIVE })
   @IsOptional()
   @IsEnum(VehicleStatus)
