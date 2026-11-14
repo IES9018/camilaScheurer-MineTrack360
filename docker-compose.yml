@@ -44,7 +44,7 @@ services:
   # Contenedor de desarrollo: acá es donde VS Code se va a "meter" a programar.
   # No es un servicio del stack de producción, es nuestro entorno de trabajo.
   backend-dev:
-    image: node:20-bullseye
+    image: node:24-bookworm
     container_name: minetrack360-backend-dev
     restart: unless-stopped
     command: sleep infinity

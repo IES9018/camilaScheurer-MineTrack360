@@ -34,7 +34,7 @@ tablero de indicadores.
 - **NG-05:** La extracción del módulo de Telemetría como microservicio independiente queda fuera de esta etapa (el diseño modular lo preserva, no lo ejecuta).
 
 ## 4. Stack Tecnológico y Restricciones
-- Backend: Node.js 20 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger (la CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7).
+- Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger (la CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7).
 - Frontend: React 18 + TypeScript + Vite, TailwindCSS, Zustand, Leaflet/OpenStreetMap, Recharts.
 - Persistencia: PostgreSQL 16 + TimescaleDB (hypertable para TELEMETRY_READING), ORM TypeORM; Redis (cache + BullMQ).
 - Mensajería: MQTT (Eclipse Mosquitto), tópicos `telemetry/+/data`.
@@ -146,7 +146,7 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-02 | El módulo de **Telemetría** (RF-03) se mantiene aislado para poder extraerlo; su extracción queda fuera de esta etapa | ADR-002 y NG-05 | Vigente (módulo aún no implementado) |
 | R-03 | **PostgreSQL 16 + TimescaleDB** como único motor; todo cambio de esquema por migración TypeORM versionada, sin editar migraciones ya aplicadas | [ADR-003](docs/adr/ADR-003-persistencia.md) | Vigente (hypertable pendiente) |
 | R-04 | Stack declarado: NestJS + TypeScript `strict` en el backend; React + Vite en el frontend; MQTT con Mosquitto; Redis para cache y colas | [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | Vigente (frontend, MQTT y Redis pendientes de implementar) |
-| R-05 | La CI y las pruebas requieren **Node ≥ 24.9** (Jest 30 con `@nestjs/testing`); `ADR-001`, el README y el servicio `backend-dev` de `docker-compose.yml` todavía indican Node 20 | `.github/workflows/ci.yml` | Pendiente de alinear (requiere aprobación para tocar `docker-compose.yml`) |
+| R-05 | La CI, las pruebas y el contenedor de desarrollo usan **Node 24** (Jest 30 con `@nestjs/testing` requiere ≥ 24.9) | `.github/workflows/ci.yml`; `docker-compose.yml` (`node:24-bookworm`); [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) (actualización) | Vigente (alineado) |
 | R-06 | El toolchain Node de desarrollo corre en contenedor Docker, no en el host | ADR-001 | Vigente |
 | R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v2) | Vigente |
 | R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend pendiente) |
@@ -165,3 +165,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-13 | Nuevo RF-12 (accesibilidad básica) y CA-07 | TP3: la accesibilidad debe ser verificable; RF-12 evita citar un RNF aún no definido |
 | v3 | 2026-11-13 | Nueva sección 6.1: escenarios Gherkin de P1 (RF-05), P2 (RF-07) y RF-12, con dependencias y riesgos | TP3: criterios de aceptación de interfaz |
 | v3 | 2026-11-13 | Sección 7: agregada R-08 (TailwindCSS) que cita ADR-004 | TP3: decisión de stack de UI |
+| v3 | 2026-11-13 | Sección 4 y R-05: Node 24 alineado en CI, `docker-compose.yml` y README; R-05 pasa a «Vigente (alineado)» | Sprint 2: cerrar la inconsistencia Node 20 vs 24 |
