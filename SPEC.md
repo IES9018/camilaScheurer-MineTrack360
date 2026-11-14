@@ -147,11 +147,11 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-01 | Estilo **monolito modular**: un único servicio de aplicación (`api`) con módulos por dominio; un módulo solo consume el servicio exportado por otro | [ADR-002](docs/adr/ADR-002-estilo-arquitectonico.md) | Vigente |
 | R-02 | El módulo de **Telemetría** (RF-03) se mantiene aislado para poder extraerlo; su extracción queda fuera de esta etapa | ADR-002 y NG-05 | Vigente (módulo aún no implementado) |
 | R-03 | **PostgreSQL 16 + TimescaleDB** como único motor; todo cambio de esquema por migración TypeORM versionada, sin editar migraciones ya aplicadas | [ADR-003](docs/adr/ADR-003-persistencia.md) | Vigente (hypertable pendiente) |
-| R-04 | Stack declarado: NestJS + TypeScript `strict` en el backend; React + Vite en el frontend; MQTT con Mosquitto; Redis para cache y colas | [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | Vigente (frontend, MQTT y Redis pendientes de implementar) |
+| R-04 | Stack declarado: NestJS + TypeScript `strict` en el backend; React + Vite en el frontend; MQTT con Mosquitto; Redis para cache y colas | [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | Vigente (MQTT y Redis pendientes; frontend base implementado, sin pantallas de negocio) |
 | R-05 | La CI, las pruebas y el contenedor de desarrollo usan **Node 24** (Jest 30 con `@nestjs/testing` requiere ≥ 24.9) | `.github/workflows/ci.yml`; `docker-compose.yml` (`node:24-bookworm`); [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) (actualización) | Vigente (alineado) |
 | R-06 | El toolchain Node de desarrollo corre en contenedor Docker, no en el host | ADR-001 | Vigente |
 | R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v2) | Vigente |
-| R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend pendiente) |
+| R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend base implementado) |
 
 ## 8. Changelog
 
@@ -170,3 +170,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-13 | Sección 4 y R-05: Node 24 alineado en CI, `docker-compose.yml` y README; R-05 pasa a «Vigente (alineado)» | Sprint 2: cerrar la inconsistencia Node 20 vs 24 |
 | v3 | 2026-11-14 | Sección 5: `Vehiculo` agrega `horasUltimoServicio` (columna `last_service_hours`); `UmbralMantenimiento` pasa a estar implementado (`maintenance_thresholds`). Sección 6.1: P1 ya cuenta con su endpoint de alertas | Sprint 2: RF-05 persistido. Las horas del último servicio no existían y RF-05 las necesita; RF-06 las actualizará |
 | v3 | 2026-11-14 | Sección 5: nuevo contrato `Operador`; `AsignacionTurno` agrega `fecha` y `turno` y fija `estado` en `ASSIGNED`/`CANCELLED`. Sección 6.1: P2 ya cuenta con sus endpoints | Sprint 2: RF-07 (asignación de turnos sin duplicados). El informe PP2 nombra `operator_id` pero no define a qué entidad apunta; se modela como tabla propia |
+| v3 | 2026-11-14 | R-04 y R-08: frontend base implementado (`frontend/`, ADR-004 actualizado); las pantallas P1 y P2 siguen pendientes | Sprint 2: base de la interfaz crítica |
