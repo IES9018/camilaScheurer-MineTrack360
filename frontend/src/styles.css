@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens de color con contraste verificado (docs/diseno/auditoria-heuristica.md §3).
+ * Un test (styles.contrast.test.ts) lee este archivo y comprueba los pares
+ * texto/fondo contra WCAG AA: si se cambia un color, el test avisa.
+ */
+@theme {
+  --color-ink: #111827;
+  --color-ink-muted: #4b5563;
+  --color-surface: #ffffff;
+  --color-page: #f3f4f6;
+  --color-line: #6b7280;
+  --color-brand: #1d4ed8;
+  --color-brand-strong: #1e40af;
+  --color-status-ok: #166534;
+  --color-status-ok-bg: #dcfce7;
+  --color-status-warn: #92400e;
+  --color-status-warn-bg: #fef3c7;
+  --color-status-crit: #b91c1c;
+  --color-status-crit-on-bg: #991b1b;
+  --color-status-crit-bg: #fee2e2;
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-ink);
+}
+
+/* Foco siempre visible al navegar con teclado (RF-12) */
+:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 2px;
+}

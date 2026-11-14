@@ -35,3 +35,24 @@ Criterios: (a) curva de aprendizaje, (b) ecosistema, (c) accesibilidad lista par
 
 ## Cuándo reabrir esta decisión
 Si la verificación manual de RF-12 falla por falta de componentes accesibles, o si el tamaño del frontend supera lo que se puede mantener solo con HTML nativo.
+
+## Actualización (2026-11-14): frontend base implementado
+Se creó `frontend/` con Vite, React 18, TypeScript `strict` y TailwindCSS (instalación según la guía oficial: paquete
+`@tailwindcss/vite`, plugin en `vite.config.ts` y `@import "tailwindcss"`). Las bibliotecas que se suman, con su motivo
+(R-07), y que **no** son librerías de componentes:
+
+| Biblioteca | Para qué | Por qué |
+|---|---|---|
+| `react-router-dom` | Rutas y protección por rol | Navegación entre login, P1 y P2 sin reinventar un enrutador |
+| `zustand` | Estado de sesión | Ya declarada en `SPEC.md` §4 y en el informe PP2 |
+| `vitest`, `jsdom`, `@testing-library/*` | Tests del frontend | Vitest comparte la configuración de Vite |
+| `eslint`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y` | Lint con revisión de accesibilidad en el código | Apoya RF-12; `jsx-a11y` detecta etiquetas faltantes y controles sin teclado |
+| `prettier` | Formato | Mismo `.prettierrc` que el backend |
+
+Decisiones y riesgos de esta etapa:
+- **ESLint 9 en el frontend** (el backend usa 10): `eslint-plugin-jsx-a11y` todavía no declara compatibilidad con la versión 10.
+- **Contraste verificado por test:** los colores son tokens en `styles.css`, y `styles.contrast.test.ts` comprueba los pares texto/fondo contra WCAG AA. Es una verificación automática de la parte de contraste de RF-12; la navegación por teclado se sigue probando a mano.
+- **Token en `sessionStorage`:** sobrevive a recargar la pestaña y se borra al cerrarla. Un ataque XSS podría leerlo; se acepta en el prototipo porque el token dura 8 h, no hay contenido de terceros y la API valida cada pedido. Alternativa futura: cookie `HttpOnly`, que exige cambios en el backend.
+- **Sin CORS en desarrollo:** el servidor de Vite reenvía `/api` al backend. Para el despliegue habrá que definir cómo se sirve el frontend (misma origen o CORS en el backend), decisión de la etapa de despliegue.
+- **Contenedor `frontend-dev`:** `node:24-bookworm`, con `node_modules` en un volumen de Docker (más rápido y sin sincronizar con OneDrive).
+- **Dependencias:** `npm audit` no informa vulnerabilidades en las dependencias de producción; informa 7 moderadas en herramientas de desarrollo (`minimatch`, vía `typescript-eslint`), a revisar cuando haya una versión corregida.
