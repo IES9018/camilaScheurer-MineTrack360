@@ -1,0 +1,539 @@
+openapi: 3.0.3
+info:
+  title: MineTrack360 API
+  version: 1.0.0
+  description: |
+    Contrato de la API REST de MineTrack360 (TP4: contratos antes que código).
+
+    **Este archivo es la fuente de verdad.** Todo cambio de endpoint empieza aquí,
+    en un PR, y después se implementa (regla del arnés `.opencoderules` v3, ADR-005).
+
+    Cubre los 5 endpoints críticos de los flujos de los journeys del TP3
+    (`docs/diseno/usuarios.md`): iniciar sesión, ver las alertas de mantenimiento (P1)
+    y asignar un turno (P2: consultar disponibilidad, asignar y deshacer).
+    Los demás endpoints implementados están listados en `docs/arquitectura/README.md`
+    como pendientes de incorporar.
+
+    Autenticación: token JWT (HS256) en `Authorization: Bearer <token>`, emitido por
+    `POST /api/v1/auth/login`. Los roles son `admin`, `supervisor`, `mantenimiento`,
+    `hse` y `lectura`; cada operación declara los permitidos en `x-roles`.
+  license:
+    name: Proyecto académico (IES 9018, PP3/ADI 2026)
+    url: https://github.com/IES9018/camilaScheurer-MineTrack360
+servers:
+  - url: /
+    description: |
+      Mismo origen que el frontend. En desarrollo, el proxy de Vite reenvía `/api` al
+      backend (`http://backend-dev:3000`); el backend también escucha en el puerto 3000.
+tags:
+  - name: auth
+    description: Autenticación y emisión del token JWT (RF-01)
+  - name: maintenance
+    description: Alertas de mantenimiento preventivo (RF-05, pantalla P1)
+  - name: shifts
+    description: Asignación de vehículos y operadores a turnos (RF-07, pantalla P2)
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Iniciar sesión y obtener un token JWT
+      description: |
+        Limitado a **5 intentos por minuto por IP** (respuesta 429 al excederlo).
+        Ante cualquier falla de credenciales (email inexistente, contraseña incorrecta
+        o usuario inactivo) devuelve el mismo mensaje, para no revelar qué dato falló.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Credenciales válidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: Credenciales inválidas
+                error: Unauthorized
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/maintenance/alerts:
+    get:
+      tags: [maintenance]
+      operationId: getFleetAlerts
+      summary: Alertas de mantenimiento de toda la flota, ordenadas por criticidad
+      description: |
+        Una fila por vehículo, de lo más urgente a lo menos urgente
+        (`CRITICAL`, `WARNING`, `NO_THRESHOLD`, `OK`). El estado sale de comparar las
+        horas desde el último servicio con el intervalo del tipo de vehículo:
+        `WARNING` desde el 90 % y `CRITICAL` desde el 100 % (CA-03).
+        `NO_THRESHOLD` indica que el tipo todavía no tiene intervalo configurado.
+      x-roles: [admin, supervisor, mantenimiento]
+      responses:
+        '200':
+          description: Listado de alertas (vacío si no hay vehículos)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FleetAlert'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/shifts/availability:
+    get:
+      tags: [shifts]
+      operationId: getShiftAvailability
+      summary: Disponibilidad de vehículos y operadores para una fecha y turno
+      description: |
+        Devuelve todos los vehículos y operadores activos y, para los que no se pueden
+        asignar, el motivo (`reason`). Un vehículo con alerta `CRITICAL` figura como
+        `CRITICAL_ALERT`.
+      x-roles: [admin, supervisor]
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: Fecha del turno, formato AAAA-MM-DD
+          schema:
+            type: string
+            format: date
+            pattern: '^\d{4}-\d{2}-\d{2}$'
+            example: '2026-11-13'
+        - name: shift
+          in: query
+          required: true
+          description: Turno
+          schema:
+            $ref: '#/components/schemas/ShiftType'
+      responses:
+        '200':
+          description: Disponibilidad del turno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAvailability'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/shifts/assignments:
+    post:
+      tags: [shifts]
+      operationId: assignShift
+      summary: Asignar un vehículo y un operador a un turno
+      description: |
+        Rechaza la asignación si el vehículo no está activo o tiene alerta `CRITICAL`,
+        si el operador no está activo, o si el vehículo o el operador ya están
+        asignados en ese turno (409). La unicidad la garantiza la base de datos, así que
+        dos pedidos simultáneos nunca generan una doble asignación.
+      x-roles: [admin, supervisor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignShiftRequest'
+      responses:
+        '201':
+          description: Asignación creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: El vehículo o el operador no existen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: |
+            Vehículo inactivo o con alerta crítica, operador inactivo, o vehículo u
+            operador ya asignados en ese turno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/shifts/assignments/{id}/cancel:
+    patch:
+      tags: [shifts]
+      operationId: cancelShiftAssignment
+      summary: Cancelar (deshacer) una asignación
+      description: |
+        Cambia el estado a `CANCELLED` y libera el vehículo y el operador para ese turno.
+        No borra el registro.
+      x-roles: [admin, supervisor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador de la asignación
+          schema:
+            type: integer
+            minimum: 1
+            example: 17
+      responses:
+        '200':
+          description: Asignación cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: La asignación no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: La asignación ya estaba cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT (HS256) obtenido en `POST /api/v1/auth/login`; vence a las 8 horas
+  responses:
+    BadRequest:
+      description: |
+        Datos inválidos: campos faltantes, con formato incorrecto o que el contrato no
+        declara (la API rechaza las propiedades de más). `message` es una lista con un
+        texto por cada problema.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 400
+            message:
+              - vehicleId must be an integer number
+            error: Bad Request
+    Unauthorized:
+      description: Falta el token, es inválido o está vencido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 401
+            message: Token de acceso requerido
+            error: Unauthorized
+    Forbidden:
+      description: El rol del usuario no tiene permiso para esta operación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 403
+            message: Permisos insuficientes para acceder a este recurso
+            error: Forbidden
+    TooManyRequests:
+      description: Se superó el límite de intentos (5 por minuto por IP)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 429
+            message: 'ThrottlerException: Too Many Requests'
+    InternalError:
+      description: Error inesperado del servidor; no se informan detalles internos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 500
+            message: Internal server error
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Formato de error de NestJS
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+          example: 409
+        message:
+          description: Un texto, o una lista de textos cuando hay varios errores de validación
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
+          description: Nombre del estado HTTP
+          example: Conflict
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: Se normaliza (sin espacios y en minúsculas) antes de validarse
+          example: supervisor@minetrack360.com
+        password:
+          type: string
+          maxLength: 72
+          minLength: 1
+          description: Máximo 72 caracteres (límite de bcrypt)
+          example: ContraseñaSegura123
+    UserRole:
+      type: string
+      enum: [admin, supervisor, mantenimiento, hse, lectura]
+    LoginResponse:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken:
+          type: string
+          description: Token JWT firmado (HS256)
+        user:
+          type: object
+          required: [id, fullName, email, role]
+          properties:
+            id:
+              type: integer
+              example: 3
+            fullName:
+              type: string
+              example: Ana Pérez
+            email:
+              type: string
+              format: email
+            role:
+              $ref: '#/components/schemas/UserRole'
+    FleetAlertStatus:
+      type: string
+      description: |
+        Estado de mantenimiento de un vehículo: `CRITICAL` desde el 100 % del intervalo,
+        `WARNING` desde el 90 %, `OK` por debajo, `NO_THRESHOLD` si su tipo no tiene
+        intervalo configurado.
+      enum: [CRITICAL, WARNING, NO_THRESHOLD, OK]
+    VehicleStatus:
+      type: string
+      description: Estado operativo del vehículo
+      enum: [ACTIVE, MAINTENANCE, OUT_OF_SERVICE]
+    FleetAlert:
+      type: object
+      required:
+        - vehicleId
+        - internalCode
+        - vehicleTypeName
+        - vehicleStatus
+        - totalEngineHours
+        - lastServiceHours
+        - hoursSinceService
+        - intervalHours
+        - ratio
+        - status
+      properties:
+        vehicleId:
+          type: integer
+          example: 14
+        internalCode:
+          type: string
+          example: CAM-014
+        vehicleTypeName:
+          type: string
+          example: Camión fuera de ruta
+        vehicleStatus:
+          $ref: '#/components/schemas/VehicleStatus'
+        totalEngineHours:
+          type: number
+          example: 1005
+        lastServiceHours:
+          type: number
+          example: 500
+        hoursSinceService:
+          type: number
+          description: Horas de uso desde el último servicio
+          example: 505
+        intervalHours:
+          type: number
+          nullable: true
+          description: Intervalo del tipo de vehículo; `null` si no está configurado
+          example: 500
+        ratio:
+          type: number
+          nullable: true
+          description: Proporción consumida del intervalo (1 = 100 %); `null` si no hay intervalo
+          example: 1.01
+        status:
+          $ref: '#/components/schemas/FleetAlertStatus'
+    ShiftType:
+      type: string
+      description: Turno (mañana, tarde, noche)
+      enum: [MORNING, AFTERNOON, NIGHT]
+    VehicleAvailability:
+      type: object
+      required: [vehicleId, internalCode, vehicleTypeName, available, reason, assignedTo]
+      properties:
+        vehicleId:
+          type: integer
+        internalCode:
+          type: string
+          example: CAM-021
+        vehicleTypeName:
+          type: string
+          example: Camión fuera de ruta
+        available:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+          enum: [NOT_ACTIVE, CRITICAL_ALERT, ALREADY_ASSIGNED, null]
+          description: |
+            Por qué no se puede asignar: no está activo (`NOT_ACTIVE`), tiene una alerta
+            crítica de mantenimiento (`CRITICAL_ALERT`) o ya está asignado en ese turno
+            (`ALREADY_ASSIGNED`). `null` cuando está disponible.
+        assignedTo:
+          type: string
+          nullable: true
+          description: Nombre del operador asignado en ese turno, si ya está asignado
+    OperatorAvailability:
+      type: object
+      required: [operatorId, fullName, employeeCode, available, reason, assignedTo]
+      properties:
+        operatorId:
+          type: integer
+        fullName:
+          type: string
+          example: Juan Pérez
+        employeeCode:
+          type: string
+          description: Legajo
+          example: OP-0001
+        available:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+          enum: [ALREADY_ASSIGNED, null]
+          description: "`ALREADY_ASSIGNED` si ya está asignado en ese turno; `null` si está disponible"
+        assignedTo:
+          type: string
+          nullable: true
+          description: Código del vehículo asignado en ese turno, si ya está asignado
+    ShiftAvailability:
+      type: object
+      required: [date, shift, vehicles, operators]
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2026-11-13'
+        shift:
+          $ref: '#/components/schemas/ShiftType'
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleAvailability'
+        operators:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperatorAvailability'
+    AssignShiftRequest:
+      type: object
+      additionalProperties: false
+      required: [vehicleId, operatorId, date, shift]
+      properties:
+        vehicleId:
+          type: integer
+          minimum: 1
+          example: 21
+        operatorId:
+          type: integer
+          minimum: 1
+          example: 5
+        date:
+          type: string
+          format: date
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          description: Fecha del turno, formato AAAA-MM-DD
+          example: '2026-11-13'
+        shift:
+          $ref: '#/components/schemas/ShiftType'
+    ShiftAssignmentStatus:
+      type: string
+      enum: [ASSIGNED, CANCELLED]
+    ShiftAssignment:
+      type: object
+      required: [id, vehicleId, operatorId, date, shift, status, assignedById, createdAt, cancelledAt]
+      properties:
+        id:
+          type: integer
+          example: 17
+        vehicleId:
+          type: integer
+        operatorId:
+          type: integer
+        date:
+          type: string
+          format: date
+          example: '2026-11-13'
+        shift:
+          $ref: '#/components/schemas/ShiftType'
+        status:
+          $ref: '#/components/schemas/ShiftAssignmentStatus'
+        assignedById:
+          type: integer
+          description: Usuario que creó la asignación
+        createdAt:
+          type: string
+          format: date-time
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true

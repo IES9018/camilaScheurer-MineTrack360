@@ -1,4 +1,4 @@
-# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018) · v2
+# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018) · v3
 
 ## 1. Alcance permitido
 - Solo archivos del presente repositorio. Prohibido operar sobre repos de la cátedra.
@@ -18,3 +18,6 @@
 - Introducir frameworks, bases de datos o servicios externos que no estén declarados en un ADR aprobado. Ante la duda, proponer un ADR nuevo antes de escribir código.
 - Credenciales, tokens o connection strings en el código (usar variables de entorno).
 - Push directo a main/develop; desactivar hooks de husky/lint-staged.
+- PROHIBIDO hardcodear secrets, tokens o credenciales (usar variables de entorno).
+- OBLIGATORIO validar y sanear toda entrada externa en el borde del sistema (DTO con ValidationPipe, sin confiar en el cliente).
+- OBLIGATORIO: todo endpoint nuevo debe estar en docs/arquitectura/api-contracts.yaml ANTES de implementarse.

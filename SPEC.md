@@ -1,6 +1,6 @@
 # SPEC-000: MineTrack360 — Gestión y Monitoreo de Flotas para Logística Minera
 
-**Versión:** v2 (2026-11-13) — ver Changelog en la sección 8.
+**Versión:** v4 (2026-11-15) — ver Changelog en la sección 8.
 
 ## 1. Contexto y Propósito
 Las empresas mineras y de logística extractiva de mediana escala en Cuyo gestionan
@@ -34,7 +34,7 @@ tablero de indicadores.
 - **NG-05:** La extracción del módulo de Telemetría como microservicio independiente queda fuera de esta etapa (el diseño modular lo preserva, no lo ejecuta).
 
 ## 4. Stack Tecnológico y Restricciones
-- Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger (la CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7).
+- Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger. El contrato de la frontera frontend↔backend es [`docs/arquitectura/api-contracts.yaml`](docs/arquitectura/api-contracts.yaml) (ADR-005); todo endpoint nuevo se declara ahí antes de implementarse. La CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7.
 - Frontend: React 18 + TypeScript + Vite, TailwindCSS, Zustand, Leaflet/OpenStreetMap, Recharts.
 - Persistencia: PostgreSQL 16 + TimescaleDB (hypertable para TELEMETRY_READING), ORM TypeORM; Redis (cache + BullMQ).
 - Mensajería: MQTT (Eclipse Mosquitto), tópicos `telemetry/+/data`.
@@ -42,6 +42,19 @@ tablero de indicadores.
 - Git Flow institucional: `feature/*` → `develop` → `main`, con PR y 1 aprobación.
 
 ## 5. Contratos de Datos / Tipos
+> Los esquemas de las respuestas y pedidos de la API están en [`api-contracts.yaml`](docs/arquitectura/api-contracts.yaml) (`components.schemas`). Los tipos de abajo son el modelo de dominio; la tabla los relaciona por nombre.
+
+| Tipo de la SPEC | Esquema OpenAPI | Observación |
+|---|---|---|
+| `Vehiculo` | `VehicleAvailability`, `FleetAlert` (parciales) | Aún no hay esquema propio de `Vehiculo`: sus endpoints (`/vehicles`) están pendientes en el contrato |
+| `UmbralMantenimiento` | — | Endpoint `PUT /maintenance/thresholds/{vehicleTypeId}` pendiente en el contrato |
+| `Operador` | `OperatorAvailability` (parcial) | `/operators` pendiente en el contrato |
+| `AsignacionTurno` | `ShiftAssignment`, `AssignShiftRequest`, `ShiftAssignmentStatus`, `ShiftType` | Cubierto |
+| Alertas de flota (RF-05) | `FleetAlert`, `FleetAlertStatus`, `VehicleStatus` | Cubierto |
+| Sesión (RF-01) | `LoginRequest`, `LoginResponse`, `UserRole` | Cubierto |
+| Errores | `ErrorResponse` | Cubierto |
+| `TipoVehiculo`, `LecturaTelemetria`, `RegistroMantenimiento` | — | Sin endpoint implementado |
+
 ```typescript
 // Entidades principales derivadas del modelo ER de PP2 (3FN)
 interface Vehiculo { id: number; patente: string; tipoId: number; estado: 'ACTIVE' | 'MAINTENANCE' | 'OUT_OF_SERVICE'; horasUltimoServicio: number; }
@@ -150,8 +163,10 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-04 | Stack declarado: NestJS + TypeScript `strict` en el backend; React + Vite en el frontend; MQTT con Mosquitto; Redis para cache y colas | [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | Vigente (MQTT y Redis pendientes; frontend base implementado, sin pantallas de negocio) |
 | R-05 | La CI, las pruebas y el contenedor de desarrollo usan **Node 24** (Jest 30 con `@nestjs/testing` requiere ≥ 24.9) | `.github/workflows/ci.yml`; `docker-compose.yml` (`node:24-bookworm`); [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) (actualización) | Vigente (alineado) |
 | R-06 | El toolchain Node de desarrollo corre en contenedor Docker, no en el host | ADR-001 | Vigente |
-| R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v2) | Vigente |
+| R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v3) | Vigente |
 | R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend base implementado) |
+| R-09 | Frontend como **SPA** que consume la API REST; el contrato `api-contracts.yaml` es la fuente de verdad y todo endpoint nuevo se declara ahí **antes** de implementarse | [ADR-005](docs/adr/ADR-005-estrategia-web.md); `.opencoderules` (v3) | Vigente (5 de 13 endpoints `/api/v1` implementados ya están en el contrato) |
+| R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (mitigaciones T-05, T-06, T-11, T-13 y T-15 pendientes) |
 
 ## 8. Changelog
 
@@ -175,3 +190,6 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-14 | Sección 6.1: la pantalla P2 (RF-07) está implementada en el frontend: fecha y turno, vehículos y operadores con su disponibilidad y motivo de bloqueo, confirmación, deshacer y manejo de conflicto (409), permisos (403) y error de red. Alta de operadores por interfaz queda fuera del Sprint 2 (se usa `POST /api/v1/operators`) | Sprint 2: interfaz crítica P2 |
 | v3 | 2026-11-14 | Se marcan RF-05, RF-07, RF-12, CA-03 y CA-07 como cumplidos, con la evidencia de `docs/pruebas/reporte-sprint2.md`. CA-05 queda sin marcar (cobertura parcial) y CA-01 también (sin tests unitarios de login). El mensaje de rol sin permiso en P2 se alinea con el escenario de la sección 6.1 | Sprint 2: reporte de pruebas |
 | v3 | 2026-11-15 | Auditoría del Sprint 2 (`docs/auditoria/auditoria-sprint2.md`): estado de los 18 hallazgos del Sprint 1 y hallazgos nuevos. Sin cambios de requisitos | Sprint 2: auditoría |
+| v4 | 2026-11-15 | Encabezado: la versión pasaba de v2 a v4 (indicaba v2 aunque el changelog ya tenía filas v3) | TP4: corregir un encabezado desactualizado |
+| v4 | 2026-11-15 | Sección 4: se nombra `api-contracts.yaml` como contrato de la API. Sección 5: tabla que relaciona los tipos con los esquemas OpenAPI y marca lo pendiente | TP4: contratos de datos por nombre |
+| v4 | 2026-11-15 | Sección 7: R-07 cita `.opencoderules` (v3); nuevas R-09 (SPA y contrato primero, ADR-005) y R-10 (seguridad, modelo de amenazas) | TP4: arnés v3 y decisiones de arquitectura web |
