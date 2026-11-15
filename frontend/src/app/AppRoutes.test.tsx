@@ -30,6 +30,13 @@ const loginResponse = (status: number, body: unknown) =>
 describe('rutas y permisos', () => {
   beforeEach(() => {
     useAuthStore.setState({ session: null });
+    // Las pantallas piden datos al montarse: una respuesta que nunca llega
+    // alcanza para probar rutas y permisos sin ruido de red.
+    vi.stubGlobal('fetch', () => new Promise<Response>(() => {}));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('sin sesión, una ruta protegida lleva al login', () => {

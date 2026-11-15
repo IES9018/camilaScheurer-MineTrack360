@@ -1,7 +1,8 @@
 # P1 — Estado de flota y alertas de mantenimiento (RF-05, HU-02)
 
 > **Versión:** v1 (corregida tras la auditoría, ver [`../auditoria-heuristica.md`](../auditoria-heuristica.md)). Los hallazgos citados (H-P1-n) se resuelven en este wireframe.
-> **Datos disponibles hoy:** el backend ya calcula `status` (`OK`/`WARNING`/`CRITICAL`), `hoursSinceService` y `ratio` (endpoint `POST /api/v1/maintenance/threshold-evaluation`). Lo demás (lista por vehículo con su umbral) depende de tablas aún no implementadas (`MAINTENANCE_THRESHOLD`) → **dependencia declarada**.
+> **Implementación (Sprint 2):** `frontend/src/features/fleet-alerts`, sobre `GET /api/v1/maintenance/alerts`. Diferencias respecto del wireframe: se agrega el estado `Sin umbral` (tipo sin intervalo configurado) y el botón «Registrar intervención» queda deshabilitado hasta RF-06.
+> **Datos disponibles al diseñar (TP3, históricos):** el backend ya calcula `status` (`OK`/`WARNING`/`CRITICAL`), `hoursSinceService` y `ratio` (endpoint `POST /api/v1/maintenance/threshold-evaluation`). Lo demás (lista por vehículo con su umbral) depende de tablas aún no implementadas (`MAINTENANCE_THRESHOLD`) → **dependencia declarada**.
 
 ## Versión inicial (v0) — antes de la auditoría
 ```
