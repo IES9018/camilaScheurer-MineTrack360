@@ -132,7 +132,7 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 ```
 
 **Dependencias y riesgos del diseño**
-- P1 cuenta con `MAINTENANCE_THRESHOLD` y `GET /api/v1/maintenance/alerts`; P2 cuenta con `operators`, `shift_assignments` y los endpoints de `/api/v1/shifts` y `/api/v1/operators` (Sprint 2). Falta la interfaz web de ambas pantallas.
+- P1 cuenta con `MAINTENANCE_THRESHOLD` y `GET /api/v1/maintenance/alerts`; P2 cuenta con `operators`, `shift_assignments` y los endpoints de `/api/v1/shifts` y `/api/v1/operators` (Sprint 2). La interfaz web de P1 está implementada (`frontend/src/features/fleet-alerts`); falta la de P2.
 - El permiso actual de `threshold-evaluation` excluye a `hse` y `lectura`; el escenario "Rol sin permiso" asume mantenerlo.
 - El estado "no disponible por alerta crítica" en P2 usa el estado de RF-05 por vehículo (HU-04 del informe PP2): lo informa `GET /api/v1/shifts/availability` con el motivo `CRITICAL_ALERT`.
 - Decisión de modelado: los operadores son una tabla propia (`operators`), no usuarios con rol, porque los roles de RF-02 no incluyen "operador" y los choferes no inician sesión en esta etapa.
@@ -171,3 +171,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-14 | Sección 5: `Vehiculo` agrega `horasUltimoServicio` (columna `last_service_hours`); `UmbralMantenimiento` pasa a estar implementado (`maintenance_thresholds`). Sección 6.1: P1 ya cuenta con su endpoint de alertas | Sprint 2: RF-05 persistido. Las horas del último servicio no existían y RF-05 las necesita; RF-06 las actualizará |
 | v3 | 2026-11-14 | Sección 5: nuevo contrato `Operador`; `AsignacionTurno` agrega `fecha` y `turno` y fija `estado` en `ASSIGNED`/`CANCELLED`. Sección 6.1: P2 ya cuenta con sus endpoints | Sprint 2: RF-07 (asignación de turnos sin duplicados). El informe PP2 nombra `operator_id` pero no define a qué entidad apunta; se modela como tabla propia |
 | v3 | 2026-11-14 | R-04 y R-08: frontend base implementado (`frontend/`, ADR-004 actualizado); las pantallas P1 y P2 siguen pendientes | Sprint 2: base de la interfaz crítica |
+| v3 | 2026-11-14 | Sección 6.1: la pantalla P1 (RF-05) está implementada en el frontend, con estados de carga, error, vacío y sin permiso, orden por criticidad, filtro y detalle operable con teclado. Los criterios CA-03 y CA-07 se marcan al verificarlos en el reporte del Sprint 2 | Sprint 2: interfaz crítica P1 |
