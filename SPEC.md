@@ -17,14 +17,14 @@ tablero de indicadores.
 - [ ] **RF-02:** Roles (Administrador, Supervisor, Mantenimiento, HSE, Lectura) con permisos diferenciados por módulo.
 - [ ] **RF-03:** Ingesta y almacenamiento de telemetría vía MQTT (posición, velocidad, temperatura, horas de uso).
 - [ ] **RF-04:** Mapa interactivo con posición y estado actual de cada vehículo.
-- [ ] **RF-05:** Alertas automáticas de mantenimiento preventivo por umbrales de horas de uso configurables por tipo de vehículo.
+- [x] **RF-05:** Alertas automáticas de mantenimiento preventivo por umbrales de horas de uso configurables por tipo de vehículo.
 - [ ] **RF-06:** Registro de intervenciones de mantenimiento (tipo, fecha, costo, repuestos, responsable).
-- [ ] **RF-07:** Asignación de vehículos y operadores a turnos, evitando duplicados.
+- [x] **RF-07:** Asignación de vehículos y operadores a turnos, evitando duplicados.
 - [ ] **RF-08:** Eventos de incidente por exceso de velocidad según límite por zona.
 - [ ] **RF-09:** Tablero de indicadores agregados (disponibilidad, horas operativas, incidentes) con filtros por período.
 - [ ] **RF-10:** Exportación de reportes de mantenimiento e incidentes en PDF/CSV.
 - [ ] **RF-11:** Auditoría de operaciones críticas (usuario, acción, fecha).
-- [ ] **RF-12:** Accesibilidad básica de la interfaz: las pantallas críticas (estado de flota y alertas de mantenimiento; asignación de turno) se pueden operar solo con teclado y cumplen contraste WCAG AA (4,5:1 en texto, 3:1 en componentes).
+- [x] **RF-12:** Accesibilidad básica de la interfaz: las pantallas críticas (estado de flota y alertas de mantenimiento; asignación de turno) se pueden operar solo con teclado y cumplen contraste WCAG AA (4,5:1 en texto, 3:1 en componentes).
 
 ## 3. Non-Goals (Límites del Alcance)
 - **NG-01:** No se integrará hardware IoT real: los datos de sensores se simulan con un generador de eventos software.
@@ -59,15 +59,15 @@ interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; 
 ## 6. Criterios de Aceptación
 - [ ] **CA-01:** Un usuario válido obtiene JWT y accede solo a los módulos de su rol (RF-01/02).
 - [ ] **CA-02:** Un mensaje MQTT publicado en telemetry/+/data se persiste y su posición aparece en el mapa (RF-03/04).
-- [ ] **CA-03:** Superado el 90%/100% del umbral de horas, el sistema genera alerta WARNING/CRITICAL (RF-05).
+- [x] **CA-03:** Superado el 90%/100% del umbral de horas, el sistema genera alerta WARNING/CRITICAL (RF-05).
 - [ ] **CA-04:** La ingesta soporta ≥ 50 msg/s con p95 < 300 ms en consultas principales (RNF-01/02).
 - [ ] **CA-05:** Cobertura de pruebas backend ≥ 70% en módulos críticos (RNF-07).
 - [ ] **CA-06:** Todo el stack levanta con docker compose up en un entorno limpio (RNF-08).
-- [ ] **CA-07:** Las pantallas P1 y P2 se operan solo con teclado y cumplen contraste AA (RF-12).
+- [x] **CA-07:** Las pantallas P1 y P2 se operan solo con teclado y cumplen contraste AA (RF-12).
 
 ### 6.1 Escenarios de interfaz (Gherkin)
 
-> Wireframes y auditoría: [`docs/diseno/`](docs/diseno/). Verificación manual sobre la implementación en Sprint 2. Pantallas: **P1** estado de flota y alertas (RF-05), **P2** asignación de turno (RF-07).
+> Wireframes y auditoría: [`docs/diseno/`](docs/diseno/). Verificación sobre la implementación en Sprint 2: [`docs/pruebas/reporte-sprint2.md`](docs/pruebas/reporte-sprint2.md). Pantallas: **P1** estado de flota y alertas (RF-05), **P2** asignación de turno (RF-07).
 
 ```gherkin
 Feature: P1 — Estado de flota y alertas de mantenimiento (RF-05)
@@ -173,3 +173,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-14 | R-04 y R-08: frontend base implementado (`frontend/`, ADR-004 actualizado); las pantallas P1 y P2 siguen pendientes | Sprint 2: base de la interfaz crítica |
 | v3 | 2026-11-14 | Sección 6.1: la pantalla P1 (RF-05) está implementada en el frontend, con estados de carga, error, vacío y sin permiso, orden por criticidad, filtro y detalle operable con teclado. Los criterios CA-03 y CA-07 se marcan al verificarlos en el reporte del Sprint 2 | Sprint 2: interfaz crítica P1 |
 | v3 | 2026-11-14 | Sección 6.1: la pantalla P2 (RF-07) está implementada en el frontend: fecha y turno, vehículos y operadores con su disponibilidad y motivo de bloqueo, confirmación, deshacer y manejo de conflicto (409), permisos (403) y error de red. Alta de operadores por interfaz queda fuera del Sprint 2 (se usa `POST /api/v1/operators`) | Sprint 2: interfaz crítica P2 |
+| v3 | 2026-11-14 | Se marcan RF-05, RF-07, RF-12, CA-03 y CA-07 como cumplidos, con la evidencia de `docs/pruebas/reporte-sprint2.md`. CA-05 queda sin marcar (cobertura parcial) y CA-01 también (sin tests unitarios de login). El mensaje de rol sin permiso en P2 se alinea con el escenario de la sección 6.1 | Sprint 2: reporte de pruebas |

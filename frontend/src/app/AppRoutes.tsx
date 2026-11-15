@@ -42,7 +42,14 @@ export function AppRoutes() {
           <Route element={<RequireRole allowed={rolesFor('alerts')} />}>
             <Route path="/alertas" element={<FleetAlertsPage />} />
           </Route>
-          <Route element={<RequireRole allowed={rolesFor('shifts')} />}>
+          <Route
+            element={
+              <RequireRole
+                allowed={rolesFor('shifts')}
+                deniedMessage="Permisos insuficientes para asignar turnos."
+              />
+            }
+          >
             <Route path="/turnos" element={<ShiftsPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
