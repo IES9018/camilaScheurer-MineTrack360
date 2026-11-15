@@ -11,8 +11,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
+    # Solo accesible desde esta computadora (127.0.0.1), no desde la red local
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -25,7 +26,7 @@ services:
     container_name: minetrack360-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
   # Broker MQTT para la ingesta de telemetría IoT (patrón Pub/Sub).
   mosquitto:
@@ -33,7 +34,7 @@ services:
     container_name: minetrack360-mosquitto
     restart: unless-stopped
     ports:
-      - "1883:1883"
+      - "127.0.0.1:1883:1883"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - mosquitto_data:/mosquitto/data
@@ -56,7 +57,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - db
       - redis
@@ -84,7 +85,7 @@ services:
       # Las carpetas montadas desde Windows no avisan cambios: se usa polling
       - VITE_USE_POLLING=true
     ports:
-      - "5173:5173"
+      - "127.0.0.1:5173:5173"
     depends_on:
       - backend-dev
 

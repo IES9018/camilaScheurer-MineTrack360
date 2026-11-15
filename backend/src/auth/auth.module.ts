@@ -4,6 +4,7 @@ import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
+import { assertStrongJwtSecret } from '../config/security';
 import { AuthService } from './auth.service';
 import { Role } from './role.entity';
 import { UserAccount } from './user-account.entity';
@@ -18,19 +19,24 @@ import { UsersRepository } from './users.repository';
     TypeOrmModule.forFeature([Role, UserAccount]),
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => {
         // getOrThrow: si falta JWT_SECRET, la app no arranca
-        secret: config.getOrThrow<string>('JWT_SECRET'),
-        signOptions: {
-          algorithm: 'HS256',
-          expiresIn: config.get<string>(
-            'JWT_EXPIRES_IN',
-            '8h',
-          ) as JwtSignOptions['expiresIn'],
-        },
-        // Solo se aceptan tokens firmados con HS256
-        verifyOptions: { algorithms: ['HS256'] },
-      }),
+        const secret = config.getOrThrow<string>('JWT_SECRET');
+        // En producción tampoco arranca con un secreto corto o de ejemplo (H-01)
+        assertStrongJwtSecret(secret, config.get<string>('NODE_ENV'));
+        return {
+          secret,
+          signOptions: {
+            algorithm: 'HS256' as const,
+            expiresIn: config.get<string>(
+              'JWT_EXPIRES_IN',
+              '8h',
+            ) as JwtSignOptions['expiresIn'],
+          },
+          // Solo se aceptan tokens firmados con HS256
+          verifyOptions: { algorithms: ['HS256' as const] },
+        };
+      },
     }),
     // Configuración base del límite de tasa; el login define el suyo con @Throttle
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 10 }]),
