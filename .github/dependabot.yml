@@ -1,0 +1,21 @@
+# Actualizaciones automáticas de dependencias (auditoría S1).
+# Dependabot abre PR hacia `develop`; el CI los valida como a cualquier otro PR.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    target-branch: develop
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /frontend
+    target-branch: develop
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
