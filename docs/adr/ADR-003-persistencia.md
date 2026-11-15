@@ -74,3 +74,19 @@ Criterios: (a) integridad referencial, (b) consultas entre tablas, (c) escritura
 Si la medición de CA-04 sobre la hypertable no alcanza el objetivo, o si aparecen datos sin esquema
 (por ejemplo, payloads heterogéneos de sensores) que no se puedan modelar como columnas. Se registraría
 con un ADR nuevo que supersede a este.
+
+## Actualización (2026-11-14): `MAINTENANCE_THRESHOLD` implementada
+La tabla `maintenance_thresholds` ya existe (migración `1794703200000-CreateMaintenanceThresholds.ts`): `vehicle_type_id`
+único con clave foránea a `vehicle_types`, e `interval_hours` mayor a 0. La misma migración agrega `vehicles.last_service_hours`
+con la restricción `last_service_hours <= total_engine_hours`. La clave foránea se declara solo en la migración, para que el
+módulo Maintenance no importe entidades de Vehicles (ADR-002, regla 1); por eso `migration:generate` podría proponer
+quitarla: hay que revisar el resultado antes de aceptarlo. Siguen sin implementar `RegistroMantenimiento`,
+`AsignacionTurno` y `LecturaTelemetria`.
+
+## Actualización (2026-11-14): `OPERATOR` y `SHIFT_ASSIGNMENT` implementadas
+La migración `1794790800000-CreateShifts.ts` crea `operators` y `shift_assignments`. La integridad de RF-07 («evitando
+duplicados») la garantiza la base con dos índices únicos **parciales** (`WHERE status = 'ASSIGNED'`): un mismo vehículo, o
+un mismo operador, no puede tener dos asignaciones vigentes en la misma fecha y turno. Las asignaciones canceladas quedan
+como historial y liberan el cupo. Esto es una de las ventajas de PostgreSQL frente a las alternativas descartadas (criterio a):
+se verificó con 8 pedidos simultáneos sobre el mismo cupo, de los que solo uno se guardó. Las claves foráneas hacia `vehicles` y
+`user_accounts` se declaran solo en la migración (ADR-002, regla 1). Sigue sin implementar `LecturaTelemetria` y `RegistroMantenimiento`.

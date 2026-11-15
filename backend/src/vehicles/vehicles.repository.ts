@@ -10,6 +10,7 @@ export interface NewVehicleData {
   licensePlate: string;
   vehicleType: VehicleType;
   totalEngineHours?: number;
+  lastServiceHours?: number;
   status?: VehicleStatus;
 }
 

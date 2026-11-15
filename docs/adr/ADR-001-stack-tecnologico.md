@@ -35,3 +35,9 @@ MQTT (Mosquitto) para ingesta; Redis para cache/colas; Docker para despliegue.
   curva inicial; un monolito modular exige disciplina para no acoplar los módulos.
 
   
+
+## Actualización (2026-11-13): versión de Node
+La decisión original indicaba Node.js 20. Se actualiza a **Node.js 24 LTS**: la CI ya lo usa y Jest 30 requiere
+Node ≥ 24.9 para cargar `@nestjs/testing` (R-05 de `SPEC.md`). El contenedor de desarrollo pasa de
+`node:20-bullseye` a `node:24-bookworm`: la lista de etiquetas oficiales de la imagen `node` no ofrece una variante
+bullseye para Node 24. El resto de la decisión (NestJS, TypeScript, monolito modular y toolchain en contenedor) no cambia.

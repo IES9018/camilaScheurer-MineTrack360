@@ -1,4 +1,5 @@
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -19,6 +20,10 @@ export enum VehicleStatus {
  * cuando exista el módulo Maintenance.
  */
 @Entity('vehicles')
+@Check(
+  'CHK_vehicles_last_service_hours',
+  '"last_service_hours" >= 0 AND "last_service_hours" <= "total_engine_hours"',
+)
 export class Vehicle {
   @PrimaryGeneratedColumn()
   id: number;
@@ -38,6 +43,10 @@ export class Vehicle {
 
   @Column('float', { default: 0 })
   totalEngineHours: number;
+
+  /** Horas de motor en el último servicio; base de RF-05 (se actualizará con RF-06). */
+  @Column('float', { default: 0 })
+  lastServiceHours: number;
 
   @Column({ type: 'enum', enum: VehicleStatus, default: VehicleStatus.ACTIVE })
   status: VehicleStatus;
