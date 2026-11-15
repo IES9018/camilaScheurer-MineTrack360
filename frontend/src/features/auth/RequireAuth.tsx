@@ -12,21 +12,33 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-function Forbidden() {
+const DEFAULT_DENIED = 'No tenés permiso para ver esta sección.';
+
+function Forbidden({ message }: { message: string }) {
   useDocumentTitle('Sin permiso');
   return (
     <section>
       <h1 className="text-2xl font-bold">Sin permiso</h1>
       <p role="alert" className="mt-2">
-        No tenés permiso para ver esta sección.
+        {message}
       </p>
     </section>
   );
 }
 
-/** Muestra la sección solo a los roles indicados (la API valida igual). */
-export function RequireRole({ allowed }: { allowed: readonly Role[] }) {
+/**
+ * Muestra la sección solo a los roles indicados (la API valida igual).
+ * `deniedMessage` permite el texto propio de cada pantalla (wireframes P1 y P2).
+ */
+export function RequireRole({
+  allowed,
+  deniedMessage = DEFAULT_DENIED,
+}: {
+  allowed: readonly Role[];
+  deniedMessage?: string;
+}) {
   const role = useAuthStore((state) => state.session?.user.role);
-  if (!role || !allowed.includes(role)) return <Forbidden />;
+  if (!role || !allowed.includes(role))
+    return <Forbidden message={deniedMessage} />;
   return <Outlet />;
 }

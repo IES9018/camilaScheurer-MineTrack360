@@ -61,7 +61,7 @@ describe('rutas y permisos', () => {
     expect(nav).toHaveTextContent('Turnos');
   });
 
-  it('mantenimiento no ve el enlace a Turnos y recibe "sin permiso" si entra por la URL', () => {
+  it('mantenimiento no ve el enlace a Turnos y recibe "Permisos insuficientes" si entra por la URL (P2)', () => {
     useAuthStore.setState({ session: sessionFor('mantenimiento') });
 
     renderAt('/turnos');
@@ -69,6 +69,16 @@ describe('rutas y permisos', () => {
     expect(
       screen.getByRole('navigation', { name: 'Principal' }),
     ).not.toHaveTextContent('Turnos');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Permisos insuficientes para asignar turnos.',
+    );
+  });
+
+  it('hse recibe "No tenés permiso para ver esta sección." si entra a Alertas por la URL (P1)', () => {
+    useAuthStore.setState({ session: sessionFor('hse') });
+
+    renderAt('/alertas');
+
     expect(screen.getByRole('alert')).toHaveTextContent(
       'No tenés permiso para ver esta sección.',
     );
