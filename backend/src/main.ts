@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { isApiDocsEnabled } from './config/security';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,15 +16,18 @@ async function bootstrap() {
     }),
   );
 
-  // Documentación interactiva OpenAPI/Swagger (informe, sección 5.1)
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('MineTrack360 API')
-    .setDescription('API REST de gestión de flotas para logística minera')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
+  // Documentación interactiva OpenAPI/Swagger (informe, sección 5.1).
+  // No se publica en producción (auditoría S1, H-13).
+  if (isApiDocsEnabled(process.env.NODE_ENV)) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('MineTrack360 API')
+      .setDescription('API REST de gestión de flotas para logística minera')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }
