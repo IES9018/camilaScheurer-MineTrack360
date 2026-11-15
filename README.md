@@ -11,7 +11,7 @@ Sistema de gestión de flotas para logística minera con IoT y mantenimiento pre
 - Contenedores: Docker + Docker Compose
 
 ## Estado del proyecto
-🚧 Sprint 2 en curso. Backend: autenticación y roles, vehículos, alertas de mantenimiento por umbral (RF-05) y asignación de turnos (RF-07). Frontend: base con login y rutas por rol; pantalla P1 de alertas de mantenimiento (RF-05) implementada; la P2 de turnos se construye a continuación. Ver `SPEC.md` (requerimientos y changelog) y `docs/` (arquitectura, diseño y ADR).
+🚧 Sprint 2 en curso. Backend: autenticación y roles, vehículos, alertas de mantenimiento por umbral (RF-05) y asignación de turnos (RF-07). Frontend: base con login y rutas por rol; pantallas P1 (alertas de mantenimiento, RF-05) y P2 (asignación de turnos, RF-07) implementadas. Ver `SPEC.md` (requerimientos y changelog) y `docs/` (arquitectura, diseño y ADR).
 
 ## Cómo levantar el entorno de desarrollo
 El toolchain Node corre en contenedores Docker (`backend-dev` y `frontend-dev`), no en tu computadora. Copiá `.env.example` a `.env` y completalo (el `.env` no se sube al repositorio).

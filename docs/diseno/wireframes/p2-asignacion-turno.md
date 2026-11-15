@@ -1,7 +1,7 @@
 # P2 — Asignación de turno (RF-07, HU-04)
 
 > **Versión:** v1 (corregida tras la auditoría). Hallazgos H-P2-n en [`../auditoria-heuristica.md`](../auditoria-heuristica.md).
-> **Backend (Sprint 2):** la tabla `shift_assignments`, `GET /api/v1/shifts/availability`, `POST /api/v1/shifts/assignments` y `PATCH /api/v1/shifts/assignments/:id/cancel` ya existen. Los motivos de bloqueo del API (`NOT_ACTIVE`, `CRITICAL_ALERT`, `ALREADY_ASSIGNED`) corresponden a los mensajes de esta pantalla. Falta implementar la interfaz web.
+> **Backend (Sprint 2):** la tabla `shift_assignments`, `GET /api/v1/shifts/availability`, `POST /api/v1/shifts/assignments` y `PATCH /api/v1/shifts/assignments/:id/cancel` ya existen. Los motivos de bloqueo del API (`NOT_ACTIVE`, `CRITICAL_ALERT`, `ALREADY_ASSIGNED`) corresponden a los mensajes de esta pantalla. Interfaz implementada en `frontend/src/features/shifts`. Diferencias respecto del wireframe: el operador se elige en una lista de opciones (no en un buscador), no se muestra la advertencia (⚠) de un vehículo porque el API de disponibilidad no la informa, y el alta de operadores no tiene pantalla (se usa `POST /api/v1/operators`).
 > **Acceso:** rol `supervisor` y `admin`. `mantenimiento` recibe "permisos insuficientes" (HU-07 del informe).
 
 ## Versión inicial (v0)
