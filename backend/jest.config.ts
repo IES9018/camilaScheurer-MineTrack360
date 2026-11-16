@@ -24,6 +24,11 @@ const config: Config = {
     'apps/**/*.(t|j)s',
   ],
   coverageDirectory: './coverage',
+  // Piso de cobertura (auditoría S2, N-07): medido en 69,3 % sentencias; se sube con el tiempo.
+  // Solo se aplica al correr con --coverage (npm run test:cov).
+  coverageThreshold: {
+    global: { statements: 65, branches: 65, functions: 50, lines: 65 },
+  },
   testEnvironment: 'node',
 };
 

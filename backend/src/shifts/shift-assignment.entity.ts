@@ -71,4 +71,8 @@ export class ShiftAssignment {
 
   @Column({ type: 'timestamptz', nullable: true })
   cancelledAt: Date | null;
+
+  /** Id del usuario que canceló (null si está activa o se canceló antes de registrar este dato). */
+  @Column({ type: 'integer', nullable: true })
+  cancelledById: number | null;
 }
