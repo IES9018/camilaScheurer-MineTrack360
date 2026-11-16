@@ -59,6 +59,7 @@ export class ShiftAssignmentDto {
   @ApiProperty() assignedById: number;
   @ApiProperty() createdAt: Date;
   @ApiProperty({ nullable: true, type: Date }) cancelledAt: Date | null;
+  @ApiProperty({ nullable: true, type: Number }) cancelledById: number | null;
 }
 
 export class OperatorDto {

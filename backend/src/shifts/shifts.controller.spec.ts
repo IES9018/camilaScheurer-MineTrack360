@@ -46,8 +46,8 @@ const shiftsStub = {
     calls.push(['assign', [dto, userId]]);
     return Promise.resolve({ id: 9 });
   },
-  cancel: (id: number) => {
-    calls.push(['cancel', [id]]);
+  cancel: (id: number, userId: number) => {
+    calls.push(['cancel', [id, userId]]);
     return Promise.resolve({ id, status: 'CANCELLED' });
   },
 };
@@ -184,7 +184,7 @@ describe('API de turnos y operadores (roles y validación)', () => {
         .patch('/api/v1/shifts/assignments/5/cancel')
         .set('x-test-role', 'supervisor')
         .expect(200);
-      expect(calls).toEqual([['cancel', [5]]]);
+      expect(calls).toEqual([['cancel', [5, 42]]]);
     });
 
     it('responde 403 para hse y 400 si el id no es numérico', async () => {

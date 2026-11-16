@@ -67,7 +67,7 @@ interface LecturaTelemetria {                                        // TELEMETR
 }
 interface RegistroMantenimiento { id: number; vehiculoId: number; tipo: string; fecha: Date; costo: number; repuestos: string; responsableId: number; }
 interface Operador { id: number; nombreCompleto: string; legajo: string; activo: boolean; }  // OPERATOR (chofer; no inicia sesión)
-interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; fecha: string; turno: 'MORNING' | 'AFTERNOON' | 'NIGHT'; estado: 'ASSIGNED' | 'CANCELLED'; }  // SHIFT_ASSIGNMENT
+interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; fecha: string; turno: 'MORNING' | 'AFTERNOON' | 'NIGHT'; estado: 'ASSIGNED' | 'CANCELLED'; canceladoPorId: number | null; }  // SHIFT_ASSIGNMENT
 ```
 ## 6. Criterios de Aceptación
 - [ ] **CA-01:** Un usuario válido obtiene JWT y accede solo a los módulos de su rol (RF-01/02).
@@ -166,7 +166,7 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v3) | Vigente |
 | R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend base implementado) |
 | R-09 | Frontend como **SPA** que consume la API REST; el contrato `api-contracts.yaml` es la fuente de verdad y todo endpoint nuevo se declara ahí **antes** de implementarse | [ADR-005](docs/adr/ADR-005-estrategia-web.md); `.opencoderules` (v3) | Vigente (5 de 13 endpoints `/api/v1` implementados ya están en el contrato) |
-| R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (mitigaciones T-05, T-06, T-11, T-13 y T-15 pendientes) |
+| R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (pendientes: T-06 sesión JWT y T-13 cabeceras) |
 
 ## 8. Changelog
 
@@ -193,3 +193,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v4 | 2026-11-15 | Encabezado: la versión pasaba de v2 a v4 (indicaba v2 aunque el changelog ya tenía filas v3) | TP4: corregir un encabezado desactualizado |
 | v4 | 2026-11-15 | Sección 4: se nombra `api-contracts.yaml` como contrato de la API. Sección 5: tabla que relaciona los tipos con los esquemas OpenAPI y marca lo pendiente | TP4: contratos de datos por nombre |
 | v4 | 2026-11-15 | Sección 7: R-07 cita `.opencoderules` (v3); nuevas R-09 (SPA y contrato primero, ADR-005) y R-10 (seguridad, modelo de amenazas) | TP4: arnés v3 y decisiones de arquitectura web |
+| v4 | 2026-11-15 | Sección 5: `AsignacionTurno` agrega `canceladoPorId` (columna `cancelled_by_id`, nullable). Sección 7: R-10 actualizada (T-05, T-11 y T-15 resueltas) | Sprint 3: mitigaciones de seguridad; hallazgo N-05 y RF-11 |
