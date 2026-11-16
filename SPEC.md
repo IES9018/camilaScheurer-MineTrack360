@@ -1,6 +1,6 @@
 # SPEC-000: MineTrack360 — Gestión y Monitoreo de Flotas para Logística Minera
 
-**Versión:** v4 (2026-11-15) — ver Changelog en la sección 8.
+**Versión:** v5 (2026-11-16) — ver Changelog en la sección 8.
 
 ## 1. Contexto y Propósito
 Las empresas mineras y de logística extractiva de mediana escala en Cuyo gestionan
@@ -26,12 +26,34 @@ tablero de indicadores.
 - [ ] **RF-11:** Auditoría de operaciones críticas (usuario, acción, fecha).
 - [x] **RF-12:** Accesibilidad básica de la interfaz: las pantallas críticas (estado de flota y alertas de mantenimiento; asignación de turno) se pueden operar solo con teclado y cumplen contraste WCAG AA (4,5:1 en texto, 3:1 en componentes).
 
+### 2.1 Requisitos No Funcionales (RNF)
+
+> RNF-01 a RNF-10 vienen del informe PP2 (§2.8.2) y conservan su numeración, porque los criterios CA-04, CA-05 y CA-06 ya los citan. RNF-11 a RNF-14 son nuevos (TP5). Los presupuestos y la forma de medirlos están en [`presupuestos-rendimiento.md`](docs/arquitectura/presupuestos-rendimiento.md). **«Estado» es lo verificado al 2026-11-16**; lo que no se midió figura como «No verificado».
+
+| ID | Requisito | Métrica | Cómo se verifica | Estado |
+|---|---|---|---|---|
+| RNF-01 | Endpoints de consulta principales | p95 < 300 ms bajo carga nominal | Prueba de carga (k6) | No verificado (las cifras del informe PP2 son simuladas, según el propio informe) |
+| RNF-02 | Ingesta de telemetría | ≥ 50 msg/s | Prueba de carga (k6) | No cumplido: RF-03 (MQTT) aún no está implementado |
+| RNF-03 | Contraseñas con bcrypt | Costo ≥ 10 | Revisión de código | **Cumple**: `BCRYPT_COST = 12` en `backend/src/auth/password.util.ts` |
+| RNF-04 | Canales cifrados (HTTPS / MQTT sobre TLS) | Binario | Revisión del despliegue | No verificado: depende del despliegue; la demo local usa HTTP |
+| RNF-05 | Disponibilidad mensual | ≥ 99 % | Monitoreo en producción | No aplica a la demo |
+| RNF-06 | Interfaz utilizable en escritorio y tablet | Ancho ≥ 768 px | Manual / automática | No verificado: sin prueba automática de ancho |
+| RNF-07 | Cobertura de pruebas del backend | ≥ 70 % en módulos críticos | `npm run test:cov` | No cumplido: 69,3 % global de sentencias medido en el Sprint 3 (PR #60), umbral de CI en 65 %; no se midió por módulo crítico |
+| RNF-08 | Despliegue reproducible con contenedores | Binario | `docker compose up` en un entorno limpio | Parcial: `docker-compose.yml` define solo contenedores de **desarrollo** (db, redis, mosquitto, `backend-dev`, `frontend-dev`); no hay Dockerfile de producción |
+| RNF-09 | Retención de telemetría | 12 meses | Política de TimescaleDB | No implementado (sin telemetría) |
+| RNF-10 | Logs estructurados (JSON) | Binario | Revisión de código | No verificado |
+| RNF-11 | LCP móvil en P1 y P2 | < 2,5 s (4G) | Lighthouse (perfil móvil) | Parcial: `/login` mide 1,4–1,5 s; P1 y P2 sin medir |
+| RNF-12 | INP en P1 y P2 | < 200 ms | Chrome DevTools (indicio en laboratorio: TBT < 200 ms) | No verificado |
+| RNF-13 | JavaScript inicial | < 200 KB gzip | `npm run check:bundle` | **Cumple**: 63,9 KB |
+| RNF-14 | P1 y P2 en pantallas < 400 px | Sin scroll horizontal de página y objetivos táctiles ≥ 48 px | Revisión manual y Playwright (pendiente) | Diseñado ([wireframes móviles](docs/diseno/wireframes/)), no implementado |
+
 ## 3. Non-Goals (Límites del Alcance)
 - **NG-01:** No se integrará hardware IoT real: los datos de sensores se simulan con un generador de eventos software.
 - **NG-02:** No se implementarán modelos de machine learning para mantenimiento predictivo (heurística por umbrales; ML es trabajo futuro).
 - **NG-03:** No se certificará cumplimiento normativo minero provincial.
 - **NG-04:** Sin soporte multi-idioma ni multi-moneda (operación Argentina únicamente).
 - **NG-05:** La extracción del módulo de Telemetría como microservicio independiente queda fuera de esta etapa (el diseño modular lo preserva, no lo ejecuta).
+- **NG-06:** La interfaz web no ofrece modo offline con escritura (sin cola de sincronización ni asignación de turnos sin conexión). Motivo y condiciones de reapertura: [`offline-sync.md`](docs/arquitectura/offline-sync.md).
 
 ## 4. Stack Tecnológico y Restricciones
 - Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger. El contrato de la frontera frontend↔backend es [`docs/arquitectura/api-contracts.yaml`](docs/arquitectura/api-contracts.yaml) (ADR-005); todo endpoint nuevo se declara ahí antes de implementarse. La CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7.
@@ -166,7 +188,9 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v3) | Vigente |
 | R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend base implementado) |
 | R-09 | Frontend como **SPA** que consume la API REST; el contrato `api-contracts.yaml` es la fuente de verdad y todo endpoint nuevo se declara ahí **antes** de implementarse | [ADR-005](docs/adr/ADR-005-estrategia-web.md); `.opencoderules` (v3) | Vigente (5 de 13 endpoints `/api/v1` implementados ya están en el contrato) |
-| R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (pendientes: T-06 sesión JWT y T-13 cabeceras) |
+| R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (T-06 sesión JWT mitigada parcialmente por ADR-006; pendiente T-13 cabeceras) |
+| R-11 | **Sesión JWT de 1 hora** con aviso 5 minutos antes y nuevo inicio de sesión al vencer; sin refresh token | [ADR-006](docs/adr/ADR-006-politica-de-sesion-jwt.md) | Vigente |
+| R-12 | Para móviles se entrega la **SPA responsive** (mobile-first); sin PWA ni app nativa en esta etapa; presupuestos de rendimiento RNF-11 a RNF-13 | [ADR-007](docs/adr/ADR-007-estrategia-mobile.md) | Vigente (diseño móvil sin implementar, RNF-14) |
 
 ## 8. Changelog
 
@@ -194,3 +218,6 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v4 | 2026-11-15 | Sección 4: se nombra `api-contracts.yaml` como contrato de la API. Sección 5: tabla que relaciona los tipos con los esquemas OpenAPI y marca lo pendiente | TP4: contratos de datos por nombre |
 | v4 | 2026-11-15 | Sección 7: R-07 cita `.opencoderules` (v3); nuevas R-09 (SPA y contrato primero, ADR-005) y R-10 (seguridad, modelo de amenazas) | TP4: arnés v3 y decisiones de arquitectura web |
 | v4 | 2026-11-15 | Sección 5: `AsignacionTurno` agrega `canceladoPorId` (columna `cancelled_by_id`, nullable). Sección 7: R-10 actualizada (T-05, T-11 y T-15 resueltas) | Sprint 3: mitigaciones de seguridad; hallazgo N-05 y RF-11 |
+| v5 | 2026-11-16 | Nueva sección 2.1 (Requisitos No Funcionales): RNF-01 a RNF-10 del informe PP2 con su numeración original, y RNF-11 a RNF-14 nuevos (rendimiento y uso móvil), cada uno con su forma de verificación y su estado real | TP5: CA-04, CA-05 y CA-06 citaban RNF que la SPEC no definía (anunciado en la v2) |
+| v5 | 2026-11-16 | Nuevo NG-06 (sin modo offline con escritura) | TP5: Non-Goal justificado en `docs/arquitectura/offline-sync.md` |
+| v5 | 2026-11-16 | Sección 7: nuevas R-11 (sesión JWT, ADR-006) y R-12 (estrategia móvil, ADR-007); R-10 actualizada (T-06 mitigada parcialmente) | ADR-006 se mergeó (PR #62) sin reflejarse en la SPEC; TP5 |
