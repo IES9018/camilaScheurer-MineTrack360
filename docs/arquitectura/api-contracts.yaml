@@ -247,7 +247,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Token JWT (HS256) obtenido en `POST /api/v1/auth/login`; vence a las 8 horas
+      description: Token JWT (HS256) obtenido en `POST /api/v1/auth/login`; vence a la hora (valor por defecto de `JWT_EXPIRES_IN`, ADR-006)
   responses:
     BadRequest:
       description: |

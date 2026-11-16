@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../features/auth/authStore';
 import { sectionsFor } from '../../features/auth/roles';
+import { SessionExpiryNotice } from '../../features/auth/SessionExpiryNotice';
 
 const ROLE_LABEL = {
   admin: 'Administrador',
@@ -25,6 +26,8 @@ export function AppLayout() {
       >
         Ir al contenido
       </a>
+
+      <SessionExpiryNotice />
 
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">

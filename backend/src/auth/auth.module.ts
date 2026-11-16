@@ -29,7 +29,7 @@ import { UsersRepository } from './users.repository';
             algorithm: 'HS256' as const,
             expiresIn: config.get<string>(
               'JWT_EXPIRES_IN',
-              '8h',
+              '1h',
             ) as JwtSignOptions['expiresIn'],
           },
           // Solo se aceptan tokens firmados con HS256

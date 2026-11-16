@@ -52,7 +52,7 @@ Se creó `frontend/` con Vite, React 18, TypeScript `strict` y TailwindCSS (inst
 Decisiones y riesgos de esta etapa:
 - **ESLint 9 en el frontend** (el backend usa 10): `eslint-plugin-jsx-a11y` todavía no declara compatibilidad con la versión 10.
 - **Contraste verificado por test:** los colores son tokens en `styles.css`, y `styles.contrast.test.ts` comprueba los pares texto/fondo contra WCAG AA. Es una verificación automática de la parte de contraste de RF-12; la navegación por teclado se sigue probando a mano.
-- **Token en `sessionStorage`:** sobrevive a recargar la pestaña y se borra al cerrarla. Un ataque XSS podría leerlo; se acepta en el prototipo porque el token dura 8 h, no hay contenido de terceros y la API valida cada pedido. Alternativa futura: cookie `HttpOnly`, que exige cambios en el backend.
+- **Token en `sessionStorage`:** sobrevive a recargar la pestaña y se borra al cerrarla. Un ataque XSS podría leerlo; se acepta en el prototipo porque el token dura 1 h (ADR-006; antes 8 h), no hay contenido de terceros y la API valida cada pedido. Alternativa futura: cookie `HttpOnly`, que exige cambios en el backend.
 - **Sin CORS en desarrollo:** el servidor de Vite reenvía `/api` al backend. Para el despliegue habrá que definir cómo se sirve el frontend (misma origen o CORS en el backend), decisión de la etapa de despliegue.
 - **Contenedor `frontend-dev`:** `node:24-bookworm`, con `node_modules` en un volumen de Docker (más rápido y sin sincronizar con OneDrive).
 - **Dependencias:** `npm audit` no informa vulnerabilidades en las dependencias de producción; informa 7 moderadas en herramientas de desarrollo (`minimatch`, vía `typescript-eslint`), a revisar cuando haya una versión corregida.
