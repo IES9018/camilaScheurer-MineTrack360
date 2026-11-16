@@ -1,6 +1,6 @@
 # Modelo de amenazas (versión ligera, STRIDE)
 
-**Fecha:** 2026-11-15 (actualizado en el Sprint 3: T-05, T-11 y T-15) · **Alcance:** los 5 endpoints críticos de [`api-contracts.yaml`](../arquitectura/api-contracts.yaml) · **Relacionado:** [ADR-005](../adr/ADR-005-estrategia-web.md), [`auditoria-sprint2.md`](../auditoria/auditoria-sprint2.md)
+**Fecha:** 2026-11-15 (actualizado en el Sprint 3: T-05, T-06, T-11 y T-15) · **Alcance:** los 5 endpoints críticos de [`api-contracts.yaml`](../arquitectura/api-contracts.yaml) · **Relacionado:** [ADR-005](../adr/ADR-005-estrategia-web.md), [`auditoria-sprint2.md`](../auditoria/auditoria-sprint2.md)
 
 ## 1. Qué se protege y quién ataca
 - **Activos:** cuentas de usuario y su token JWT; datos de la flota (alertas de mantenimiento); asignaciones de turno (integridad: sin doble asignación y con trazabilidad).
@@ -28,7 +28,7 @@ Estado: **Aplicada** = existe y fue verificada (código o ejecución); **Pendien
 | T-03 | Spoofing | todos | JWT firmado con un secreto débil o por defecto | `assertStrongJwtSecret` en `backend/src/config/security.ts` (solo en producción) | Aplicada |
 | T-04 | Elevation of privilege | `alerts`, `availability`, `assignments`, `cancel` | Rol insuficiente invoca operaciones restringidas | `@Roles(...)` + `RolesGuard`; responde 403 (verificado con los 5 roles) | Aplicada |
 | T-05 | Elevation of privilege | todos | Endpoint nuevo sin `@Roles` queda abierto a **cualquier** usuario autenticado (el guard no deniega por defecto) | Prueba `authorization-coverage.spec.ts`: falla si un endpoint no tiene `@Roles` y no está en la lista de excepciones (3 públicos o solo con token), o si aparece un controlador sin revisar. Verificada quitando un `@Roles` a propósito | Aplicada (Sprint 3) |
-| T-06 | Elevation of privilege | todos | Token con rol viejo o de usuario desactivado sigue válido hasta expirar (8 h): el guard no consulta la base (H-17) | Ninguna aún; decidir en un ADR (expiración corta + refresh, o riesgo aceptado) | **Pendiente** |
+| T-06 | Elevation of privilege | todos | Token con rol viejo o de usuario desactivado sigue válido hasta expirar: el guard no consulta la base (H-17) | [ADR-006](../adr/ADR-006-politica-de-sesion-jwt.md): vencimiento de 1 h (`JWT_EXPIRES_IN`), aviso 5 min antes y cierre de sesión al vencer. **No revoca**: la ventana baja de 8 h a 1 h, no desaparece | **Mitigada parcialmente** (ADR-006) |
 | T-07 | Tampering | `assignments`, `availability` | Cuerpo o consulta manipulados (campos extra, fecha o turno inválidos, tipos erróneos) | `AssignShiftDto` y `SlotQueryDto` (regex, `IsISO8601`, enum) + `ValidationPipe` en `main.ts`; 400 (verificado) | Aplicada |
 | T-08 | Tampering | todos | Inyección SQL | TypeORM con parámetros; el único `createQueryBuilder` (`users.repository.ts`) usa `:email` enlazado | Aplicada |
 | T-09 | Tampering | `assignments` | Doble asignación de vehículo u operador en un mismo turno (carrera entre dos pedidos) | Índices únicos parciales `UQ_shift_assignments_vehicle_slot` y `..._operator_slot` (migración `CreateShifts`); `23505` → 409 en `shifts.service.ts` | Aplicada |
@@ -43,7 +43,7 @@ Estado: **Aplicada** = existe y fue verificada (código o ejecución); **Pendien
 ## 4. Riesgos que quedan y prioridad
 | Prioridad | Pendiente | Acción prevista |
 |---|---|---|
-| 1 | T-06 sesión JWT | ADR de sesión (H-17) antes de desplegar |
+| 1 | T-06 sesión JWT (residual) | Revocación real: refresh token o consulta al estado del usuario (alternativas de ADR-006) |
 | 2 | T-13 cabeceras | ADR + `helmet` (R-07) |
 | 3 | T-15 (despliegue) | `trust proxy` al definir el proxy inverso (N-08) |
 
