@@ -154,3 +154,4 @@ docker compose down -v     # apaga y BORRA la base de datos y los volúmenes
 | El script de datos dice «No se pudo iniciar sesión» | Usuario o clave distintos de los del `seed:user` |
 | P2 no muestra «ya asignado» | La fecha de la asignación no es la que mira P2 (ver `DEMO_DATE`, paso 7) |
 | El frontend no llega al backend | `backend-dev` no está corriendo `npm run start:dev` |
+| P2 o la API fallan con `column ... does not exist` | Hay migraciones nuevas sin aplicar tras actualizar el código: corré `npm run migration:run` en `backend/` |
