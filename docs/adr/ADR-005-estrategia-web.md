@@ -1,7 +1,7 @@
 # ADR-005: Estrategia web — SPA (React + Vite) que consume la API REST contra un contrato OpenAPI
 
 **Fecha:** 2026-11-15
-**Estado:** Propuesto (pasa a Aceptado al aprobarse el PR)
+**Estado:** Aceptado
 **Relacionado:** [ADR-001](./ADR-001-stack-tecnologico.md) (React 18 + Vite); [ADR-002](./ADR-002-estilo-arquitectonico.md); [ADR-004](./ADR-004-stack-ui.md); [`api-contracts.yaml`](../arquitectura/api-contracts.yaml); [`threat-model-lite.md`](../seguridad/threat-model-lite.md); `SPEC.md` §4, §5 y §7.
 
 ## Contexto

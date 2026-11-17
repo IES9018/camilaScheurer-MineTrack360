@@ -1,7 +1,7 @@
 # ADR-006: Política de sesión — JWT de 1 hora con aviso previo y nuevo inicio de sesión
 
 **Fecha:** 2026-11-16
-**Estado:** Propuesto (pasa a Aceptado al aprobarse el PR)
+**Estado:** Aceptado
 **Relacionado:** [ADR-004](./ADR-004-stack-ui.md) (token en `sessionStorage`); [ADR-005](./ADR-005-estrategia-web.md); [`threat-model-lite.md`](../seguridad/threat-model-lite.md) (T-06); hallazgo H-17 de [`auditoria-sprint1.md`](../auditoria/auditoria-sprint1.md) y [`auditoria-sprint2.md`](../auditoria/auditoria-sprint2.md).
 
 ## Contexto
