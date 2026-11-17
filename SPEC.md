@@ -54,6 +54,7 @@ tablero de indicadores.
 - **NG-04:** Sin soporte multi-idioma ni multi-moneda (operación Argentina únicamente).
 - **NG-05:** La extracción del módulo de Telemetría como microservicio independiente queda fuera de esta etapa (el diseño modular lo preserva, no lo ejecuta).
 - **NG-06:** La interfaz web no ofrece modo offline con escritura (sin cola de sincronización ni asignación de turnos sin conexión). Motivo y condiciones de reapertura: [`offline-sync.md`](docs/arquitectura/offline-sync.md).
+- **NG-07:** No se publica un despliegue productivo ni imágenes de producción (Dockerfile multi-stage) en esta etapa; la entrega es una demostración local. Motivo y trabajo futuro: [`deploy.md`](docs/deploy/deploy.md), sección 7.
 
 ## 4. Stack Tecnológico y Restricciones
 - Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger. El contrato de la frontera frontend↔backend es [`docs/arquitectura/api-contracts.yaml`](docs/arquitectura/api-contracts.yaml) (ADR-005); todo endpoint nuevo se declara ahí antes de implementarse. La CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7.
@@ -221,3 +222,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v5 | 2026-11-16 | Nueva sección 2.1 (Requisitos No Funcionales): RNF-01 a RNF-10 del informe PP2 con su numeración original, y RNF-11 a RNF-14 nuevos (rendimiento y uso móvil), cada uno con su forma de verificación y su estado real | TP5: CA-04, CA-05 y CA-06 citaban RNF que la SPEC no definía (anunciado en la v2) |
 | v5 | 2026-11-16 | Nuevo NG-06 (sin modo offline con escritura) | TP5: Non-Goal justificado en `docs/arquitectura/offline-sync.md` |
 | v5 | 2026-11-16 | Sección 7: nuevas R-11 (sesión JWT, ADR-006) y R-12 (estrategia móvil, ADR-007); R-10 actualizada (T-06 mitigada parcialmente) | ADR-006 se mergeó (PR #62) sin reflejarse en la SPEC; TP5 |
+| v5.1 | 2026-11-16 | Nuevo NG-07 (sin despliegue productivo ni Dockerfile; demo local) | Sprint 3: `docs/deploy/deploy.md` |
