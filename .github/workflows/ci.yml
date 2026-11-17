@@ -52,7 +52,7 @@ jobs:
 
       # Falla si aparece una vulnerabilidad alta o crítica en dependencias de producción
       - name: Auditoría de dependencias (producción)
-        run: npm audit --omit=dev --audit-level=high
+        run: node scripts/audit-gate.mjs
 
   frontend:
     name: Frontend (typecheck, lint, formato, test, build)
