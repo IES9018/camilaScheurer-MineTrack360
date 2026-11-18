@@ -1,7 +1,7 @@
 # ADR-004: Stack de interfaz — TailwindCSS sobre React + Vite
 
 **Fecha:** 2026-11-13
-**Estado:** Propuesto (pasa a Aceptado al aprobarse el PR)
+**Estado:** Aceptado
 **Relacionado:** [ADR-001](./ADR-001-stack-tecnologico.md) (React 18 + Vite); [ADR-002](./ADR-002-estilo-arquitectonico.md); `SPEC.md` §4, RF-12 y R-07.
 
 ## Contexto

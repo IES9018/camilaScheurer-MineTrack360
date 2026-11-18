@@ -17,7 +17,7 @@
 | Hallazgos de auditorías anteriores que siguen abiertos | H-06, N-01, N-04, N-09 |
 | Hallazgos nuevos | 8 (N-11 a N-18), todos de severidad baja o media |
 | Amenazas del modelo STRIDE (16) | 14 aplicadas, 1 mitigada parcialmente (T-06), 1 pendiente (T-13) |
-| Dependencias de producción con vulnerabilidades | **0** en backend y frontend (`npm audit --omit=dev`) |
+| Dependencias de producción con vulnerabilidades | Backend: **1 advertencia alta sin parche publicado** (`picomatch`, GHSA-fc5q-39xc-vjpf), riesgo aceptado hasta 2026-12-15 (corrección del 2026-11-17, ver I-08). Frontend: 0 (`npm audit --omit=dev`) |
 | Pruebas | Backend **152 de 152** y frontend **102 de 102** en verde; cobertura backend 69,3 % de sentencias |
 | Hallazgo más importante | **N-15 y N-16:** el sprint pide presupuestos *medidos* y pantallas *adaptadas* a móvil; hoy solo hay presupuestos definidos, medición de `/login` y del peso del JavaScript, y wireframes móviles |
 
@@ -62,6 +62,7 @@ Un «incidente» es un error, riesgo o desvío introducido o no detectado en tra
 | I-05 | **Artefacto de origen desconocido:** apareció un script de datos (`seed-demo.sh`) sin versionar en la copia de trabajo, que no habían escrito ni la estudiante (probablemente de otra sesión) ni la sesión actual | Estado de Git: archivo sin seguimiento | No se ejecutó ni se subió; se escribió uno propio y verificado (I-03, I-04) | No está en el repositorio | Un archivo cuyo origen no se puede explicar no entra al historial ni se ejecuta contra la API |
 | I-06 | **SPEC con referencias sin definición y desactualizada:** los criterios CA-04, CA-05 y CA-06 citaban RNF que la SPEC no definía, y ADR-006 (sesión) se mergeó sin reflejarse en la SPEC | Revisión cruzada al hacer TP5 | SPEC v5: sección de RNF (RNF-01 a RNF-14) y reglas R-11 y R-12 | PR #64 | Cada ADR nuevo se refleja en la SPEC en el mismo PR; las referencias cruzadas se verifican |
 | I-07 | **Numeración de ADR desviada de la consigna:** la consigna nombra `ADR-006-estrategia-mobile`, pero el número 006 ya estaba ocupado por la sesión | Revisión de la consigna antes de escribir | La estrategia móvil quedó como ADR-007 y la desviación se declaró en el ADR y en el PR | `docs/adr/ADR-007-estrategia-mobile.md` (PR #64) | Se decide y se **declara** la desviación en vez de renumerar un ADR ya aprobado |
+| I-08 | **Esta auditoría afirmó «0 vulnerabilidades de producción» y el CI la contradijo:** el paso `npm audit` del job Backend falló por 4 entradas altas, correspondientes a una sola advertencia sin parche (`picomatch`). No se puede determinar si la advertencia se publicó después de la medición o si la lectura fue incorrecta; la afirmación quedó desactualizada en ambos casos | El CI en rojo y una nueva ejecución de `npm audit --omit=dev` en el backend | `scripts/audit-gate.mjs` con excepción documentada y fecha de revisión; corrección de esta auditoría | Commits `9bdfe2a`, `f976196`, `c6de253`; PR #70 y #71 | Todo número de seguridad se escribe con el comando que lo produjo y se vuelve a ejecutar antes de cerrar; una cifra «0» sin fecha no es evidencia |
 
 **Observación sobre el método:** I-03, I-04 y I-05 se encontraron **antes de entregar** porque el trabajo se probó contra una base de datos y una API reales. I-02 llegó hasta la estudiante porque la guía solo se había probado sobre una base vacía y sin Docker. La lección es la misma: lo que no se ejecutó no está verificado.
 
@@ -88,8 +89,8 @@ Un «incidente» es un error, riesgo o desvío introducido o no detectado en tra
 | N-06 | **Resuelto** (PR #60) | `ThrottlerGuard` como `APP_GUARD` en `app.module.ts` (100 pedidos por minuto por IP); el login conserva `@Throttle` de 5 por minuto y ya no repite el guard (`auth.controller.ts`) |
 | N-07 | **Resuelto** (PR #60) | Existen `auth.service.spec.ts`, `auth.controller.spec.ts` y `authorization-coverage.spec.ts`; `jest.config.ts` fija un `coverageThreshold` global (65 / 65 / 50 / 65). Cobertura por módulo hoy: `auth` 72,2 %, `maintenance` 84,3 %, `shifts` 86,4 %, `vehicles` 71,4 % (sentencias) |
 | N-08 | **Resuelto como decisión** (PR #66) | `deploy.md`, sección 8: mismo origen con proxy inverso, sin CORS. **Sin implementar**: no hay proxy |
-| N-09 | **Abierto (solo desarrollo)** | `npm audit` completo: backend 32 (2 bajas, 28 moderadas, 2 altas, 0 críticas), frontend 7 moderadas. **0 en producción** en ambos. Antes había una crítica en el backend; ya no aparece |
-| N-02, N-03, N-10 | **Siguen resueltos** | `.github/dependabot.yml` existe; `ci.yml` tiene `npm audit --omit=dev --audit-level=high` en los dos jobs; `.env.example` usa marcadores `CAMBIAR_...` |
+| N-09 | **Abierto (solo desarrollo)** | `npm audit` completo: backend 32 (2 bajas, 28 moderadas, 2 altas, 0 críticas), frontend 7 moderadas. En producción: frontend 0; backend **1 advertencia alta sin parche (`picomatch`)**, aceptada hasta 2026-12-15 en [`dependencias-riesgo-aceptado.md`](dependencias-riesgo-aceptado.md) *(corregido el 2026-11-17: la versión original decía 0 en ambos; ver I-08)*. Antes había una crítica en el backend; ya no aparece |
+| N-02, N-03, N-10 | **Siguen resueltos** | `.github/dependabot.yml` existe; `ci.yml` audita las dependencias de producción en los dos jobs (frontend con `npm audit --omit=dev --audit-level=high`; backend con `node scripts/audit-gate.mjs`, que agrupa por advertencia y admite la excepción documentada de `picomatch`); `.env.example` usa marcadores `CAMBIAR_...` |
 
 ## 6. Hallazgos nuevos del Sprint 3
 

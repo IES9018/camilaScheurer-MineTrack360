@@ -25,10 +25,12 @@ jobs:
       HUSKY: "0"
     steps:
       - name: Checkout
+        # Acción oficial de GitHub: descarga el código del repositorio en el runner
         uses: actions/checkout@v7
 
       # Node 24: Jest 30 necesita >= 24.9 para cargar @nestjs/testing (ESM)
       - name: Setup Node.js
+        # Acción oficial de GitHub: instala Node 24 y cachea npm
         uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -54,6 +56,25 @@ jobs:
       - name: Auditoría de dependencias (producción)
         run: node scripts/audit-gate.mjs
 
+  contract:
+    name: Contrato OpenAPI (lint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # Acción oficial de GitHub: descarga el código del repositorio en el runner
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        # Acción oficial de GitHub: instala Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # El contrato es la fuente de verdad de la API (R-09). Herramienta externa: se ejecuta
+      # con npx fijando la versión y NO es dependencia del proyecto (R-07).
+      - name: Lint del contrato
+        run: npx --yes @redocly/cli@2.77.0 lint docs/arquitectura/api-contracts.yaml
+
   frontend:
     name: Frontend (typecheck, lint, formato, test, build)
     runs-on: ubuntu-latest
@@ -62,9 +83,11 @@ jobs:
         working-directory: frontend
     steps:
       - name: Checkout
+        # Acción oficial de GitHub: descarga el código del repositorio en el runner
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        # Acción oficial de GitHub: instala Node 24 y cachea npm
         uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -89,7 +112,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Presupuesto de JavaScript inicial < 200 KB gzip (RNF-13, ADR-007)
+      - name: Presupuesto de peso del JavaScript
+        run: npm run check:bundle
+
       - name: Auditoría de dependencias (producción)
         run: npm audit --omit=dev --audit-level=high
-
-

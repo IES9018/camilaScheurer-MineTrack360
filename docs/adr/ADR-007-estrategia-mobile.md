@@ -1,7 +1,7 @@
 # ADR-007: Estrategia mobile — web responsive (la SPA actual), sin PWA ni app nativa por ahora
 
 **Fecha:** 2026-11-16
-**Estado:** Propuesto (pasa a Aceptado al aprobarse el PR)
+**Estado:** Aceptado
 **Relacionado:** [ADR-004](./ADR-004-stack-ui.md); [ADR-005](./ADR-005-estrategia-web.md); [ADR-006](./ADR-006-politica-de-sesion-jwt.md); [`presupuestos-rendimiento.md`](../arquitectura/presupuestos-rendimiento.md); [`offline-sync.md`](../arquitectura/offline-sync.md); [wireframes móviles](../diseno/wireframes/); `SPEC.md` (RNF-06, RNF-11 a RNF-14, NG-06, R-12).
 
 > **Nota de numeración:** la consigna del TP5 nombra este archivo `ADR-006-estrategia-mobile.md`. El número 006 ya lo ocupa la política de sesión (PR #62, mergeado), y un ADR aprobado no se renumera, así que este es el ADR-007. Es una desviación deliberada de la consigna.

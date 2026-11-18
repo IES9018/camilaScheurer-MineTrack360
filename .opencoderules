@@ -1,23 +1,29 @@
-# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018) · v3
+# ARNÉS OPENCODE — MineTrack360 · PP3/ADI 2026 (IES9018) · vFinal (2026-11-17)
 
-## 1. Alcance permitido
+## 1. Alcance
 - Solo archivos del presente repositorio. Prohibido operar sobre repos de la cátedra.
 - Solo tocar: backend/src (NestJS), frontend/src (React), docs/, .github/ y SPEC.md (toda modificación de SPEC.md lleva su entrada en el Changelog).
 - Prohibido que el asistente modifique este archivo (.opencoderules): lo edita solo el estudiante.
-- Prohibido modificar: migraciones ya aplicadas, docker-compose.yml sin aprobación previa.
+- Prohibido modificar: migraciones ya aplicadas (los cambios de esquema van en una migración nueva) y docker-compose.yml sin aprobación previa.
 
 ## 2. Estándares técnicos obligatorios
 - TypeScript con "strict": true en backend y frontend.
-- Commits convencionales (feat|fix|docs|chore|refactor|test:).
-- Tests Jest obligatorios para todo servicio de dominio nuevo (cobertura ≥ 70% en módulos críticos).
-- Endpoints versionados /api/v1 y documentados con decoradores Swagger.
+- Commits convencionales (feat|fix|docs|chore|refactor|test|ci:).
+- Tests obligatorios para todo servicio de dominio nuevo: Jest en el backend, Vitest en el frontend (cobertura ≥ 70% en módulos críticos).
+- Endpoints versionados /api/v1. El contrato docs/arquitectura/api-contracts.yaml es la fuente de verdad: todo endpoint nuevo se declara ahí ANTES de implementarse y pasa el lint del contrato.
+- Toda entrada externa se valida y sanea en el borde (DTO con ValidationPipe, sin confiar en el cliente).
 
-## 3. Prácticas prohibidas
+## 3. Prohibiciones
 - Tipo `any` (explícito o implícito).
-- Dependencias nuevas sin declaración y justificación en el PR.
-- Introducir frameworks, bases de datos o servicios externos que no estén declarados en un ADR aprobado. Ante la duda, proponer un ADR nuevo antes de escribir código.
-- Credenciales, tokens o connection strings en el código (usar variables de entorno).
+- Credenciales, tokens o connection strings en el código o en archivos de ejemplo utilizables (usar variables de entorno y marcadores CAMBIAR_...).
+- Dependencias nuevas sin declaración y justificación en el PR. Una actualización de versión mayor solo entra en un PR propio, con pruebas. Las herramientas que se ejecutan con npx se declaran en el PR con su versión fijada.
+- Frameworks, bases de datos o servicios externos que no estén en un ADR aprobado. Ante la duda, proponer un ADR antes de escribir código.
 - Push directo a main/develop; desactivar hooks de husky/lint-staged.
-- PROHIBIDO hardcodear secrets, tokens o credenciales (usar variables de entorno).
-- OBLIGATORIO validar y sanear toda entrada externa en el borde del sistema (DTO con ValidationPipe, sin confiar en el cliente).
-- OBLIGATORIO: todo endpoint nuevo debe estar en docs/arquitectura/api-contracts.yaml ANTES de implementarse.
+- Ejecutar o versionar archivos cuyo origen no se pueda explicar.
+
+## 4. Proceso
+- Orden de trabajo: SPEC → ADR (si hay decisión de arquitectura) → contrato → código → pruebas → PR.
+- Todo PR usa la plantilla oficial y enlaza su Issue. Con la CI en rojo no se mergea.
+- Los ADR aprobados no se reescriben ni se renumeran: un cambio es una actualización fechada o un ADR nuevo. Cada ADR nuevo se refleja en la SPEC (sección 7 y Changelog) en el mismo PR.
+- Las guías y scripts de demo se prueban contra una API y una base reales, y también sobre una base ya existente, antes de entregarse.
+- Todo número de calidad o seguridad (cobertura, vulnerabilidades, rendimiento) se escribe con el comando que lo produjo y la fecha; lo que no se midió se declara «no verificado».
