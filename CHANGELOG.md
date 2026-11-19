@@ -8,6 +8,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Added
 - Script `docs/arquitectura/medir-p1-p2.cjs` y medición de P1 y P2 (LCP, TBT, CLS) en laboratorio emulado, registrada en `docs/arquitectura/presupuestos-rendimiento.md` (cierra parcialmente N-15).
 - Script `docs/arquitectura/medir-movil.cjs`: verifica a 360 px que P1 y P2 no tengan scroll horizontal y que todos sus controles midan ≥ 48 px (RNF-14).
+- Contrato OpenAPI: los 8 endpoints que faltaban (`GET /auth/me`, `GET/POST /vehicles`, `GET /vehicles/{id}`, `POST /maintenance/threshold-evaluation`, `PUT /maintenance/thresholds/{vehicleTypeId}`, `GET/POST /operators`), con sus esquemas y roles; ahora cubre los 13 (cierra N-14).
 
 ### Changed
 - **P1 y P2 adaptadas a móvil** (cierra N-16): en pantallas angostas la tabla de P1 se muestra como tarjetas, el detalle ocupa toda la pantalla, los controles miden ≥ 48 px y el resumen con «Confirmar» de P2 queda fijo abajo. Solo cambian clases de Tailwind; no se agregan dependencias.
