@@ -304,12 +304,26 @@ describe('ShiftsPage', () => {
     render(<ShiftsPage />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'No se pudo cargar la disponibilidad',
+      'No se pudo conectar con el servidor para cargar la disponibilidad. Revisá la conexión.',
     );
     await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
 
     expect(
       await screen.findByRole('radio', { name: /CAM-021/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('con un error 500 culpa al servidor y no a la conexión', async () => {
+    fetchMock.mockResolvedValueOnce(json(500, { message: 'Internal error' }));
+    render(<ShiftsPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(
+      'El servidor no pudo cargar la disponibilidad',
+    );
+    expect(alert).not.toHaveTextContent('conexión');
+    expect(
+      screen.getByRole('button', { name: 'Reintentar' }),
     ).toBeInTheDocument();
   });
 
