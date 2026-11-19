@@ -204,7 +204,7 @@ export function ShiftsPage() {
     <section>
       {heading}
       <form onSubmit={onSubmit} className="mt-4">
-        <div className="flex flex-wrap items-end gap-6">
+        <div className="flex flex-wrap items-end gap-6 max-md:flex-col max-md:items-stretch max-md:gap-3">
           <div>
             <label htmlFor="fecha" className="block font-medium">
               Fecha
@@ -215,17 +215,21 @@ export function ShiftsPage() {
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="rounded border border-line bg-surface px-2 py-1"
+              className="rounded border border-line bg-surface px-2 py-1 max-md:min-h-12 max-md:w-full"
             />
           </div>
           <fieldset>
             <legend className="font-medium">Turno</legend>
-            <div className="flex gap-4">
+            <div className="flex gap-4 max-md:flex-col max-md:gap-0">
               {SHIFT_OPTIONS.map((o) => (
-                <label key={o.value} className="flex items-center gap-1">
+                <label
+                  key={o.value}
+                  className="flex items-center gap-1 max-md:min-h-12 max-md:gap-3"
+                >
                   <input
                     type="radio"
                     name="turno"
+                    className="max-md:size-5"
                     value={o.value}
                     checked={shift === o.value}
                     onChange={() => setShift(o.value)}
@@ -256,7 +260,7 @@ export function ShiftsPage() {
             <button
               type="button"
               onClick={refresh}
-              className="mt-3 rounded bg-brand px-3 py-1 font-medium text-white hover:bg-brand-strong"
+              className="mt-3 rounded bg-brand px-3 py-1 font-medium text-white hover:bg-brand-strong max-md:min-h-12"
             >
               Reintentar
             </button>
@@ -275,11 +279,11 @@ export function ShiftsPage() {
                     const blocked = vehicleBlockText(v);
                     return (
                       <li key={v.vehicleId}>
-                        <label className="flex items-start gap-2">
+                        <label className="flex items-start gap-2 max-md:min-h-12 max-md:gap-3 max-md:py-2">
                           <input
                             type="radio"
                             name="vehiculo"
-                            className="mt-1"
+                            className="mt-1 max-md:size-5"
                             disabled={!v.available}
                             checked={vehicle?.vehicleId === v.vehicleId}
                             onChange={() => setVehicleId(v.vehicleId)}
@@ -320,11 +324,11 @@ export function ShiftsPage() {
                 <ul className="space-y-2">
                   {data.operators.map((o) => (
                     <li key={o.operatorId}>
-                      <label className="flex items-start gap-2">
+                      <label className="flex items-start gap-2 max-md:min-h-12 max-md:gap-3 max-md:py-2">
                         <input
                           type="radio"
                           name="operador"
-                          className="mt-1"
+                          className="mt-1 max-md:size-5"
                           disabled={!o.available}
                           checked={operator?.operatorId === o.operatorId}
                           onChange={() => setOperatorId(o.operatorId)}
@@ -358,25 +362,25 @@ export function ShiftsPage() {
         )}
 
         {data && (
-          <div className="mt-4 rounded border border-line bg-surface p-4">
+          <div className="mt-4 rounded border border-line bg-surface p-4 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:rounded-none">
             <p aria-live="polite">
               <span className="font-bold">Resumen: </span>
               {vehicle && operator
                 ? `${vehicle.internalCode} · ${operator.fullName} · ${shortDate(date)} ${shiftLabel(shift)}`
                 : 'elegí un vehículo y un operador.'}
             </p>
-            <div className="mt-3 flex justify-end gap-3">
+            <div className="mt-3 flex justify-end gap-3 max-md:[&>button]:flex-1">
               <button
                 type="button"
                 onClick={clearSelection}
-                className="rounded border border-line px-3 py-1 font-medium hover:bg-page"
+                className="rounded border border-line px-3 py-1 font-medium hover:bg-page max-md:min-h-12"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={!vehicle || !operator || saving}
-                className="rounded bg-brand px-3 py-1 font-medium text-white hover:bg-brand-strong disabled:opacity-60"
+                className="rounded bg-brand px-3 py-1 font-medium text-white hover:bg-brand-strong disabled:opacity-60 max-md:min-h-12"
               >
                 {saving ? 'Guardando…' : 'Confirmar asignación'}
               </button>
@@ -399,7 +403,7 @@ export function ShiftsPage() {
             <button
               type="button"
               onClick={() => void undo(feedback.undoId as number)}
-              className="font-semibold underline"
+              className="font-semibold underline max-md:inline-flex max-md:min-h-12 max-md:items-center max-md:px-2"
             >
               Deshacer
             </button>
@@ -408,7 +412,7 @@ export function ShiftsPage() {
             <button
               type="button"
               onClick={() => void confirm()}
-              className="font-semibold underline"
+              className="font-semibold underline max-md:inline-flex max-md:min-h-12 max-md:items-center max-md:px-2"
             >
               Reintentar
             </button>

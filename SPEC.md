@@ -44,8 +44,8 @@ tablero de indicadores.
 | RNF-10 | Logs estructurados (JSON) | Binario | Revisión de código | No verificado |
 | RNF-11 | LCP móvil en P1 y P2 | < 2,5 s (4G) | Lighthouse (perfil móvil) | Cumple en laboratorio emulado (2026-11-18): P1 1,11 s y P2 1,09 s de mediana (Chromium con CPU 4x y red 1,6 Mbps, no Lighthouse ni dispositivo real); `/login` 1,4–1,5 s |
 | RNF-12 | INP en P1 y P2 | < 200 ms | Chrome DevTools (indicio en laboratorio: TBT < 200 ms) | Indicio favorable, no verificado: TBT de mediana 25 ms (P1) y 5 ms (P2), con un máximo de 185 ms en P1, y eventos de un clic ≤ 72 ms en laboratorio; falta INP de campo |
-| RNF-13 | JavaScript inicial | < 200 KB gzip | `npm run check:bundle` | **Cumple**: 63,9 KB |
-| RNF-14 | P1 y P2 en pantallas < 400 px | Sin scroll horizontal de página y objetivos táctiles ≥ 48 px | Revisión manual y Playwright (pendiente) | Diseñado ([wireframes móviles](docs/diseno/wireframes/)), no implementado |
+| RNF-13 | JavaScript inicial | < 200 KB gzip | `npm run check:bundle` | **Cumple**: 64,2 KB (2026-11-19; 63,9 KB el 2026-11-16) |
+| RNF-14 | P1 y P2 en pantallas < 400 px | Sin scroll horizontal de página y objetivos táctiles ≥ 48 px | Playwright a 360 px: `docs/arquitectura/medir-movil.cjs` | **Cumple en laboratorio (2026-11-19)** con las desviaciones del diseño que figuran en los [wireframes móviles](docs/diseno/wireframes/); no verificado en un dispositivo real ni en Safari |
 
 ## 3. Non-Goals (Límites del Alcance)
 - **NG-01:** No se integrará hardware IoT real: los datos de sensores se simulan con un generador de eventos software.
@@ -191,7 +191,7 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-09 | Frontend como **SPA** que consume la API REST; el contrato `api-contracts.yaml` es la fuente de verdad y todo endpoint nuevo se declara ahí **antes** de implementarse | [ADR-005](docs/adr/ADR-005-estrategia-web.md); `.opencoderules` (v3) | Vigente (5 de 13 endpoints `/api/v1` implementados ya están en el contrato) |
 | R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (T-06 sesión JWT mitigada parcialmente por ADR-006; pendiente T-13 cabeceras) |
 | R-11 | **Sesión JWT de 1 hora** con aviso 5 minutos antes y nuevo inicio de sesión al vencer; sin refresh token | [ADR-006](docs/adr/ADR-006-politica-de-sesion-jwt.md) | Vigente |
-| R-12 | Para móviles se entrega la **SPA responsive** (mobile-first); sin PWA ni app nativa en esta etapa; presupuestos de rendimiento RNF-11 a RNF-13 | [ADR-007](docs/adr/ADR-007-estrategia-mobile.md) | Vigente (diseño móvil sin implementar, RNF-14) |
+| R-12 | Para móviles se entrega la **SPA responsive** (mobile-first); sin PWA ni app nativa en esta etapa; presupuestos de rendimiento RNF-11 a RNF-13 | [ADR-007](docs/adr/ADR-007-estrategia-mobile.md) | Vigente (P1 y P2 adaptadas a < 400 px, RNF-14) |
 | R-13 | La CI protege `develop` y `main`: lint del contrato OpenAPI, typecheck, lint, pruebas con umbral de cobertura, build, presupuesto de peso del JavaScript y auditoría de dependencias de producción. **Un PR con la CI en rojo no se mergea** | `.github/workflows/ci.yml`; [`dependencias-riesgo-aceptado.md`](docs/auditoria/dependencias-riesgo-aceptado.md) | Vigente (la protección de rama se configura en GitHub; no verificable desde el repositorio) |
 
 ### 7.1 Trazabilidad ADR ↔ restricciones
@@ -241,3 +241,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | vFinal | 2026-11-17 | Versión congelada para la defensa. Se marcan RF-01, RF-02, CA-01 y CA-05 con su evidencia; RNF-07 pasa a «Cumplido por módulo crítico» con las cifras de `npm run test:cov` | Cierre: las pruebas de autenticación del PR #60 y la cobertura por módulo permiten cerrarlos |
 | vFinal | 2026-11-17 | Sección 7: R-04 actualizada (el frontend ya tiene P1 y P2), R-07 cita el arnés vFinal, nueva R-13 (CI protege las ramas) y nueva sección 7.1 (trazabilidad ADR ↔ restricciones) | TP6: arnés final y pipeline; cada ADR queda ligado a lo que respalda |
 | vFinal | 2026-11-18 | RNF-11 y RNF-12 con la medición de P1 y P2 (`docs/arquitectura/presupuestos-rendimiento.md` §2.1) | Hallazgo N-15 del Sprint 3: los presupuestos estaban definidos pero sin medir |
+| vFinal | 2026-11-19 | RNF-14 pasa a «Cumple en laboratorio»; R-12 actualizada | N-16: P1 y P2 adaptadas a móvil y verificadas con `medir-movil.cjs` (sin scroll horizontal y controles ≥ 48 px a 360 px) |
