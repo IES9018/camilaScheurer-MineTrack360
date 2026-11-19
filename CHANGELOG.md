@@ -4,7 +4,9 @@ Todos los cambios relevantes de MineTrack360 se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionado, [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
-_Sin cambios todavía._
+
+### Added
+- Script `docs/arquitectura/medir-p1-p2.cjs` y medición de P1 y P2 (LCP, TBT, CLS) en laboratorio emulado, registrada en `docs/arquitectura/presupuestos-rendimiento.md` (cierra parcialmente N-15).
 
 ## [0.1.0] - 2026-11-17
 Primera versión etiquetada: demostración local del núcleo del sistema (autenticación por roles, alertas de mantenimiento y asignación de turnos), con seguridad aplicada, contrato de API, CI y documentación de arquitectura. No incluye telemetría, mapa ni tablero (ver «Alcance de esta versión»).

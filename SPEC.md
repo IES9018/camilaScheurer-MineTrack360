@@ -28,7 +28,7 @@ tablero de indicadores.
 
 ### 2.1 Requisitos No Funcionales (RNF)
 
-> RNF-01 a RNF-10 vienen del informe PP2 (§2.8.2) y conservan su numeración, porque los criterios CA-04, CA-05 y CA-06 ya los citan. RNF-11 a RNF-14 son nuevos (TP5). Los presupuestos y la forma de medirlos están en [`presupuestos-rendimiento.md`](docs/arquitectura/presupuestos-rendimiento.md). **«Estado» es lo verificado al 2026-11-17**; lo que no se midió figura como «No verificado».
+> RNF-01 a RNF-10 vienen del informe PP2 (§2.8.2) y conservan su numeración, porque los criterios CA-04, CA-05 y CA-06 ya los citan. RNF-11 a RNF-14 son nuevos (TP5). Los presupuestos y la forma de medirlos están en [`presupuestos-rendimiento.md`](docs/arquitectura/presupuestos-rendimiento.md). **«Estado» es lo verificado al 2026-11-18**; lo que no se midió figura como «No verificado».
 
 | ID | Requisito | Métrica | Cómo se verifica | Estado |
 |---|---|---|---|---|
@@ -42,8 +42,8 @@ tablero de indicadores.
 | RNF-08 | Despliegue reproducible con contenedores | Binario | `docker compose up` en un entorno limpio | Parcial: `docker-compose.yml` define solo contenedores de **desarrollo** (db, redis, mosquitto, `backend-dev`, `frontend-dev`); no hay Dockerfile de producción |
 | RNF-09 | Retención de telemetría | 12 meses | Política de TimescaleDB | No implementado (sin telemetría) |
 | RNF-10 | Logs estructurados (JSON) | Binario | Revisión de código | No verificado |
-| RNF-11 | LCP móvil en P1 y P2 | < 2,5 s (4G) | Lighthouse (perfil móvil) | Parcial: `/login` mide 1,4–1,5 s; P1 y P2 sin medir |
-| RNF-12 | INP en P1 y P2 | < 200 ms | Chrome DevTools (indicio en laboratorio: TBT < 200 ms) | No verificado |
+| RNF-11 | LCP móvil en P1 y P2 | < 2,5 s (4G) | Lighthouse (perfil móvil) | Cumple en laboratorio emulado (2026-11-18): P1 1,11 s y P2 1,09 s de mediana (Chromium con CPU 4x y red 1,6 Mbps, no Lighthouse ni dispositivo real); `/login` 1,4–1,5 s |
+| RNF-12 | INP en P1 y P2 | < 200 ms | Chrome DevTools (indicio en laboratorio: TBT < 200 ms) | Indicio favorable, no verificado: TBT de mediana 25 ms (P1) y 5 ms (P2), con un máximo de 185 ms en P1, y eventos de un clic ≤ 72 ms en laboratorio; falta INP de campo |
 | RNF-13 | JavaScript inicial | < 200 KB gzip | `npm run check:bundle` | **Cumple**: 63,9 KB |
 | RNF-14 | P1 y P2 en pantallas < 400 px | Sin scroll horizontal de página y objetivos táctiles ≥ 48 px | Revisión manual y Playwright (pendiente) | Diseñado ([wireframes móviles](docs/diseno/wireframes/)), no implementado |
 
@@ -240,3 +240,4 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v5.1 | 2026-11-16 | Nuevo NG-07 (sin despliegue productivo ni Dockerfile; demo local) | Sprint 3: `docs/deploy/deploy.md` |
 | vFinal | 2026-11-17 | Versión congelada para la defensa. Se marcan RF-01, RF-02, CA-01 y CA-05 con su evidencia; RNF-07 pasa a «Cumplido por módulo crítico» con las cifras de `npm run test:cov` | Cierre: las pruebas de autenticación del PR #60 y la cobertura por módulo permiten cerrarlos |
 | vFinal | 2026-11-17 | Sección 7: R-04 actualizada (el frontend ya tiene P1 y P2), R-07 cita el arnés vFinal, nueva R-13 (CI protege las ramas) y nueva sección 7.1 (trazabilidad ADR ↔ restricciones) | TP6: arnés final y pipeline; cada ADR queda ligado a lo que respalda |
+| vFinal | 2026-11-18 | RNF-11 y RNF-12 con la medición de P1 y P2 (`docs/arquitectura/presupuestos-rendimiento.md` §2.1) | Hallazgo N-15 del Sprint 3: los presupuestos estaban definidos pero sin medir |
