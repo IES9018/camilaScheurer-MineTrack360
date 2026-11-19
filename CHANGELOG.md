@@ -12,6 +12,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Changed
 - **P1 y P2 adaptadas a móvil** (cierra N-16): en pantallas angostas la tabla de P1 se muestra como tarjetas, el detalle ocupa toda la pantalla, los controles miden ≥ 48 px y el resumen con «Confirmar» de P2 queda fijo abajo. Solo cambian clases de Tailwind; no se agregan dependencias.
 
+### Fixed
+- P1 y P2 ya no culpan a la conexión ante cualquier error al cargar datos (cierra N-11): sin respuesta del servidor se pide revisar la conexión; si el servidor responde con un error (500, etc.) se dice que falló el servidor. Nuevo `shared/api/loadFailure.ts` con sus tests.
+
 ## [0.1.0] - 2026-11-17
 Primera versión etiquetada: demostración local del núcleo del sistema (autenticación por roles, alertas de mantenimiento y asignación de turnos), con seguridad aplicada, contrato de API, CI y documentación de arquitectura. No incluye telemetría, mapa ni tablero (ver «Alcance de esta versión»).
 

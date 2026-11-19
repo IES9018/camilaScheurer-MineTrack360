@@ -6,6 +6,11 @@ import {
   type FormEvent,
 } from 'react';
 import { ApiError } from '../../shared/api/client';
+import {
+  loadFailure,
+  loadFailureText,
+  type LoadFailure,
+} from '../../shared/api/loadFailure';
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle';
 import {
   cancelAssignment,
@@ -26,7 +31,7 @@ import {
 
 type LoadResult =
   | { key: string; data: ShiftAvailability }
-  | { key: string; failure: 'forbidden' | 'network' };
+  | { key: string; failure: LoadFailure };
 
 interface Feedback {
   kind: 'success' | 'error' | 'info';
@@ -65,13 +70,7 @@ export function ShiftsPage() {
       },
       (error: unknown) => {
         if (cancelled) return;
-        setResult({
-          key,
-          failure:
-            error instanceof ApiError && error.status === 403
-              ? 'forbidden'
-              : 'network',
-        });
+        setResult({ key, failure: loadFailure(error) });
       },
     );
     return () => {
@@ -251,12 +250,12 @@ export function ShiftsPage() {
             Cargando disponibilidad…
           </p>
         )}
-        {failure === 'network' && (
+        {(failure === 'network' || failure === 'server') && (
           <div
             role="alert"
             className="mt-4 rounded border border-line bg-surface p-4"
           >
-            <p>No se pudo cargar la disponibilidad. Revisá la conexión.</p>
+            <p>{loadFailureText(failure, 'la disponibilidad')}</p>
             <button
               type="button"
               onClick={refresh}

@@ -6,7 +6,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ApiError } from '../../shared/api/client';
+import {
+  loadFailure,
+  loadFailureText,
+  type LoadFailure,
+} from '../../shared/api/loadFailure';
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle';
 import { fetchFleetAlerts, type FleetAlert } from './alertsApi';
 import {
@@ -23,7 +27,7 @@ import {
   type StatusFilter,
 } from './alertsModel';
 
-type Failure = 'forbidden' | 'network';
+type Failure = LoadFailure;
 
 const timeOf = (date: Date) =>
   date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
@@ -72,11 +76,7 @@ export function FleetAlertsPage() {
         setFailure(null);
       } catch (error) {
         if (cancelled) return;
-        setFailure(
-          error instanceof ApiError && error.status === 403
-            ? 'forbidden'
-            : 'network',
-        );
+        setFailure(loadFailure(error));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -140,12 +140,12 @@ export function FleetAlertsPage() {
     return (
       <section>
         {heading}
-        {failure === 'network' ? (
+        {failure === 'network' || failure === 'server' ? (
           <div
             role="alert"
             className="mt-4 rounded border border-line bg-surface p-4"
           >
-            <p>No se pudieron cargar las alertas. Revisá la conexión.</p>
+            <p>{loadFailureText(failure, 'las alertas')}</p>
             <button
               type="button"
               onClick={() => reload()}
@@ -182,11 +182,12 @@ export function FleetAlertsPage() {
         </p>
       </div>
 
-      {failure === 'network' && (
+      {(failure === 'network' || failure === 'server') && (
         <div
           role="alert"
           className="mt-4 rounded border border-status-crit bg-status-crit-bg p-3 text-status-crit-on-bg"
         >
+          {failure === 'server' ? 'El servidor respondió con un error. ' : ''}
           No se pudo actualizar. Se muestran datos de las{' '}
           {updatedAt ? timeOf(updatedAt) : '—'}.{' '}
           <button
