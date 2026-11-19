@@ -8,11 +8,11 @@ info:
     **Este archivo es la fuente de verdad.** Todo cambio de endpoint empieza aquí,
     en un PR, y después se implementa (regla del arnés `.opencoderules` v3, ADR-005).
 
-    Cubre los 5 endpoints críticos de los flujos de los journeys del TP3
-    (`docs/diseno/usuarios.md`): iniciar sesión, ver las alertas de mantenimiento (P1)
-    y asignar un turno (P2: consultar disponibilidad, asignar y deshacer).
-    Los demás endpoints implementados están listados en `docs/arquitectura/README.md`
-    como pendientes de incorporar.
+    Cubre los 13 endpoints implementados. Los 5 críticos de los journeys del TP3
+    (`docs/diseno/usuarios.md`) son: iniciar sesión, ver las alertas de mantenimiento (P1)
+    y asignar un turno (P2: consultar disponibilidad, asignar y deshacer). Los otros 8
+    (usuario actual, vehículos, operadores, evaluación y umbrales de mantenimiento)
+    se incorporaron después (N-14).
 
     Autenticación: token JWT (HS256) en `Authorization: Bearer <token>`, emitido por
     `POST /api/v1/auth/login`. Los roles son `admin`, `supervisor`, `mantenimiento`,
@@ -32,6 +32,10 @@ tags:
     description: Alertas de mantenimiento preventivo (RF-05, pantalla P1)
   - name: shifts
     description: Asignación de vehículos y operadores a turnos (RF-07, pantalla P2)
+  - name: vehicles
+    description: Flota de vehículos
+  - name: operators
+    description: Operadores (choferes) que se asignan a los turnos
 security:
   - bearerAuth: []
 paths:
@@ -233,6 +237,260 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: La asignación ya estaba cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/auth/me:
+    get:
+      tags: [auth]
+      operationId: getCurrentUser
+      summary: Datos del token del usuario autenticado
+      description: |
+        Devuelve los datos firmados dentro del token (no consulta la base de datos).
+        Sirve para comprobar que la sesión sigue vigente.
+      x-roles: [admin, supervisor, mantenimiento, hse, lectura]
+      responses:
+        '200':
+          description: Datos del token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenClaims'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/vehicles:
+    get:
+      tags: [vehicles]
+      operationId: listVehicles
+      summary: Listar todos los vehículos
+      x-roles: [admin, supervisor, mantenimiento, hse, lectura]
+      responses:
+        '200':
+          description: Todos los vehículos (vacío si no hay)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [vehicles]
+      operationId: createVehicle
+      summary: Registrar un vehículo nuevo
+      description: |
+        Rechaza con 400 un tipo de vehículo inexistente o `lastServiceHours` mayor que
+        `totalEngineHours`, y con 409 un código interno o una patente ya usados.
+        Los tipos de vehículo no se crean por la API (se cargan en la base).
+      x-roles: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVehicleRequest'
+      responses:
+        '201':
+          description: Vehículo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: El código interno o la patente ya están en uso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/vehicles/{id}:
+    get:
+      tags: [vehicles]
+      operationId: getVehicle
+      summary: Obtener un vehículo por id
+      x-roles: [admin, supervisor, mantenimiento, hse, lectura]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador del vehículo
+          schema:
+            type: integer
+            example: 14
+      responses:
+        '200':
+          description: El vehículo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: El vehículo no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/maintenance/threshold-evaluation:
+    post:
+      tags: [maintenance]
+      operationId: evaluateThreshold
+      summary: Evaluar el estado de mantenimiento según las horas de uso
+      description: |
+        Cálculo puro, sin consultar ni guardar datos. `hoursSinceService` se redondea a
+        un decimal; `OK` por debajo del 90 % del intervalo, `WARNING` desde el 90 % y
+        `CRITICAL` desde el 100 %. Responde **200** (no 201) porque no crea nada.
+      x-roles: [admin, supervisor, mantenimiento]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateThresholdRequest'
+      responses:
+        '200':
+          description: Resultado de la evaluación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThresholdEvaluation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/maintenance/thresholds/{vehicleTypeId}:
+    put:
+      tags: [maintenance]
+      operationId: setMaintenanceThreshold
+      summary: Definir o actualizar el intervalo de servicio de un tipo de vehículo
+      description: Crea el intervalo si no existía o lo reemplaza. Cambia el estado que calcula `GET /api/v1/maintenance/alerts`.
+      x-roles: [admin]
+      parameters:
+        - name: vehicleTypeId
+          in: path
+          required: true
+          description: Identificador del tipo de vehículo
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetThresholdRequest'
+      responses:
+        '200':
+          description: Intervalo vigente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceThreshold'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: El tipo de vehículo no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/operators:
+    get:
+      tags: [operators]
+      operationId: listOperators
+      summary: Listar operadores
+      x-roles: [admin, supervisor]
+      responses:
+        '200':
+          description: Todos los operadores (vacío si no hay)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Operator'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [operators]
+      operationId: createOperator
+      summary: Registrar un operador
+      x-roles: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOperatorRequest'
+      responses:
+        '201':
+          description: Operador creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operator'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: El legajo ya existe
           content:
             application/json:
               schema:
@@ -553,3 +811,185 @@ components:
           description: >-
             Id del usuario que canceló. Es null mientras la asignación está
             activa y en las canceladas antes de que se registrara este dato.
+    TokenClaims:
+      type: object
+      description: Datos firmados dentro del token JWT
+      required: [sub, email, role]
+      properties:
+        sub:
+          type: integer
+          description: Id del usuario
+          example: 3
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+        iat:
+          type: integer
+          description: Momento de emisión (segundos desde 1970)
+        exp:
+          type: integer
+          description: Momento de vencimiento (segundos desde 1970)
+    VehicleType:
+      type: object
+      required: [id, name, category]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Camión fuera de ruta
+        category:
+          type: string
+          example: Transporte
+    Vehicle:
+      type: object
+      required: [id, internalCode, licensePlate, vehicleType, totalEngineHours, lastServiceHours, status, createdAt]
+      properties:
+        id:
+          type: integer
+          example: 14
+        internalCode:
+          type: string
+          example: CAM-014
+        licensePlate:
+          type: string
+          example: AB123CD
+        vehicleType:
+          $ref: '#/components/schemas/VehicleType'
+        totalEngineHours:
+          type: number
+          example: 1005
+        lastServiceHours:
+          type: number
+          example: 500
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+        createdAt:
+          type: string
+          format: date-time
+    CreateVehicleRequest:
+      type: object
+      additionalProperties: false
+      required: [internalCode, licensePlate, vehicleTypeId]
+      properties:
+        internalCode:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Código interno único
+          example: CAM-001
+        licensePlate:
+          type: string
+          minLength: 1
+          maxLength: 20
+          description: Patente única
+          example: AB123CD
+        vehicleTypeId:
+          type: integer
+          minimum: 1
+          description: Id de un tipo de vehículo existente
+          example: 1
+        totalEngineHours:
+          type: number
+          minimum: 0
+          default: 0
+          description: Horas de motor acumuladas
+        lastServiceHours:
+          type: number
+          minimum: 0
+          default: 0
+          description: Horas de motor en el último servicio; no puede superar las acumuladas
+        status:
+          $ref: '#/components/schemas/VehicleStatus'
+    EvaluateThresholdRequest:
+      type: object
+      additionalProperties: false
+      required: [totalEngineHours, lastServiceHours, intervalHours]
+      properties:
+        totalEngineHours:
+          type: number
+          minimum: 0
+          example: 1850.5
+        lastServiceHours:
+          type: number
+          minimum: 0
+          description: No puede superar `totalEngineHours`
+          example: 1500
+        intervalHours:
+          type: number
+          exclusiveMinimum: true
+          minimum: 0
+          description: Intervalo de mantenimiento en horas (mayor a 0)
+          example: 400
+    ThresholdEvaluation:
+      type: object
+      required: [status, hoursSinceService, ratio]
+      properties:
+        status:
+          type: string
+          enum: [OK, WARNING, CRITICAL]
+        hoursSinceService:
+          type: number
+          description: Horas desde el último servicio, redondeadas a un decimal
+          example: 350.5
+        ratio:
+          type: number
+          description: Proporción consumida del intervalo
+          example: 0.8763
+    SetThresholdRequest:
+      type: object
+      additionalProperties: false
+      required: [intervalHours]
+      properties:
+        intervalHours:
+          type: number
+          exclusiveMinimum: true
+          minimum: 0
+          maximum: 100000
+          description: Horas de uso entre servicios (mayor a 0, hasta 100000)
+          example: 500
+    MaintenanceThreshold:
+      type: object
+      required: [vehicleTypeId, intervalHours]
+      properties:
+        vehicleTypeId:
+          type: integer
+          example: 1
+        intervalHours:
+          type: number
+          example: 500
+    Operator:
+      type: object
+      required: [id, fullName, employeeCode, active]
+      properties:
+        id:
+          type: integer
+          example: 5
+        fullName:
+          type: string
+          example: Juan Pérez
+        employeeCode:
+          type: string
+          description: Legajo
+          example: OP-0001
+        active:
+          type: boolean
+    CreateOperatorRequest:
+      type: object
+      additionalProperties: false
+      required: [fullName, employeeCode]
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Juan Pérez
+        employeeCode:
+          type: string
+          minLength: 1
+          maxLength: 30
+          description: Legajo único
+          example: OP-0001
