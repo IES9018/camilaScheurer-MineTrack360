@@ -60,6 +60,7 @@ const assignment = (o: Partial<ShiftAssignment> = {}): ShiftAssignment => ({
   assignedById: 7,
   createdAt: new Date('2026-11-13T12:00:00Z'),
   cancelledAt: null,
+  cancelledById: null,
   ...o,
 });
 
@@ -213,15 +214,16 @@ describe('ShiftsService', () => {
     it('marca la asignación como cancelada y registra la fecha', async () => {
       active = [assignment({ id: 3 })];
 
-      const result = await service.cancel(3);
+      const result = await service.cancel(3, 8);
 
       expect(result.status).toBe('CANCELLED');
+      expect(result.cancelledById).toBe(8);
       expect(result.cancelledAt).toBeInstanceOf(Date);
       expect(saved).toHaveLength(1);
     });
 
     it('lanza NotFoundException si no existe', async () => {
-      await expect(service.cancel(99)).rejects.toBeInstanceOf(
+      await expect(service.cancel(99, 8)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -229,7 +231,9 @@ describe('ShiftsService', () => {
     it('lanza ConflictException si ya estaba cancelada, sin volver a guardar', async () => {
       active = [assignment({ id: 3, status: ShiftAssignmentStatus.CANCELLED })];
 
-      await expect(service.cancel(3)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.cancel(3, 8)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
       expect(saved).toEqual([]);
     });
   });

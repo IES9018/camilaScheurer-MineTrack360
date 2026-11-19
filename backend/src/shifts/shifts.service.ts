@@ -47,6 +47,7 @@ const toDto = (a: ShiftAssignment): ShiftAssignmentDto => ({
   assignedById: a.assignedById,
   createdAt: a.createdAt,
   cancelledAt: a.cancelledAt,
+  cancelledById: a.cancelledById,
 });
 
 /**
@@ -201,10 +202,11 @@ export class ShiftsService {
 
   /**
    * Cancela una asignación (queda como historial, no se borra).
+   * Registra quién canceló (`userId`, auditoría S2 N-05).
    * @throws NotFoundException si no existe.
    * @throws ConflictException si ya estaba cancelada.
    */
-  async cancel(id: number): Promise<ShiftAssignmentDto> {
+  async cancel(id: number, userId: number): Promise<ShiftAssignmentDto> {
     const assignment = await this.repository.findAssignmentById(id);
     if (!assignment) {
       throw new NotFoundException(`Asignación con id ${id} no encontrada`);
@@ -214,6 +216,7 @@ export class ShiftsService {
     }
     assignment.status = ShiftAssignmentStatus.CANCELLED;
     assignment.cancelledAt = new Date();
+    assignment.cancelledById = userId;
     return toDto(await this.repository.saveAssignment(assignment));
   }
 }

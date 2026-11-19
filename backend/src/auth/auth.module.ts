@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { assertStrongJwtSecret } from '../config/security';
@@ -30,7 +29,7 @@ import { UsersRepository } from './users.repository';
             algorithm: 'HS256' as const,
             expiresIn: config.get<string>(
               'JWT_EXPIRES_IN',
-              '8h',
+              '1h',
             ) as JwtSignOptions['expiresIn'],
           },
           // Solo se aceptan tokens firmados con HS256
@@ -38,8 +37,6 @@ import { UsersRepository } from './users.repository';
         };
       },
     }),
-    // Configuración base del límite de tasa; el login define el suyo con @Throttle
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 10 }]),
   ],
   controllers: [AuthController],
   providers: [AuthService, UsersRepository],

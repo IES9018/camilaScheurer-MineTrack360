@@ -1,6 +1,6 @@
 # SPEC-000: MineTrack360 — Gestión y Monitoreo de Flotas para Logística Minera
 
-**Versión:** v2 (2026-11-13) — ver Changelog en la sección 8.
+**Versión:** vFinal (2026-11-17) — congelada para la defensa. Ver Changelog en la sección 8.
 
 ## 1. Contexto y Propósito
 Las empresas mineras y de logística extractiva de mediana escala en Cuyo gestionan
@@ -13,8 +13,8 @@ tablero de indicadores.
 
 ## 2. Requerimientos Funcionales
 
-- [ ] **RF-01:** Autenticación de usuarios (usuario/contraseña) con emisión de token JWT.
-- [ ] **RF-02:** Roles (Administrador, Supervisor, Mantenimiento, HSE, Lectura) con permisos diferenciados por módulo.
+- [x] **RF-01:** Autenticación de usuarios (usuario/contraseña) con emisión de token JWT. *Evidencia: `auth.service.spec.ts`, `auth.controller.spec.ts` (PR #60).*
+- [x] **RF-02:** Roles (Administrador, Supervisor, Mantenimiento, HSE, Lectura) con permisos diferenciados por módulo. *Evidencia: `authorization-coverage.spec.ts` (todo endpoint declara sus roles).*
 - [ ] **RF-03:** Ingesta y almacenamiento de telemetría vía MQTT (posición, velocidad, temperatura, horas de uso).
 - [ ] **RF-04:** Mapa interactivo con posición y estado actual de cada vehículo.
 - [x] **RF-05:** Alertas automáticas de mantenimiento preventivo por umbrales de horas de uso configurables por tipo de vehículo.
@@ -26,15 +26,38 @@ tablero de indicadores.
 - [ ] **RF-11:** Auditoría de operaciones críticas (usuario, acción, fecha).
 - [x] **RF-12:** Accesibilidad básica de la interfaz: las pantallas críticas (estado de flota y alertas de mantenimiento; asignación de turno) se pueden operar solo con teclado y cumplen contraste WCAG AA (4,5:1 en texto, 3:1 en componentes).
 
+### 2.1 Requisitos No Funcionales (RNF)
+
+> RNF-01 a RNF-10 vienen del informe PP2 (§2.8.2) y conservan su numeración, porque los criterios CA-04, CA-05 y CA-06 ya los citan. RNF-11 a RNF-14 son nuevos (TP5). Los presupuestos y la forma de medirlos están en [`presupuestos-rendimiento.md`](docs/arquitectura/presupuestos-rendimiento.md). **«Estado» es lo verificado al 2026-11-17**; lo que no se midió figura como «No verificado».
+
+| ID | Requisito | Métrica | Cómo se verifica | Estado |
+|---|---|---|---|---|
+| RNF-01 | Endpoints de consulta principales | p95 < 300 ms bajo carga nominal | Prueba de carga (k6) | No verificado (las cifras del informe PP2 son simuladas, según el propio informe) |
+| RNF-02 | Ingesta de telemetría | ≥ 50 msg/s | Prueba de carga (k6) | No cumplido: RF-03 (MQTT) aún no está implementado |
+| RNF-03 | Contraseñas con bcrypt | Costo ≥ 10 | Revisión de código | **Cumple**: `BCRYPT_COST = 12` en `backend/src/auth/password.util.ts` |
+| RNF-04 | Canales cifrados (HTTPS / MQTT sobre TLS) | Binario | Revisión del despliegue | No verificado: depende del despliegue; la demo local usa HTTP |
+| RNF-05 | Disponibilidad mensual | ≥ 99 % | Monitoreo en producción | No aplica a la demo |
+| RNF-06 | Interfaz utilizable en escritorio y tablet | Ancho ≥ 768 px | Manual / automática | No verificado: sin prueba automática de ancho |
+| RNF-07 | Cobertura de pruebas del backend | ≥ 70 % en módulos críticos | `npm run test:cov` | Cumplido por módulo crítico (`npm run test:cov`, 2026-11-17, sentencias): `auth` 72,2 %, `maintenance` 84,3 %, `shifts` 86,4 %, `vehicles` 71,4 %. El total del backend es 69,3 % y el umbral de CI está en 65 %. Cobertura de **funciones** baja: `auth` 47,6 % y `vehicles` 31,8 % |
+| RNF-08 | Despliegue reproducible con contenedores | Binario | `docker compose up` en un entorno limpio | Parcial: `docker-compose.yml` define solo contenedores de **desarrollo** (db, redis, mosquitto, `backend-dev`, `frontend-dev`); no hay Dockerfile de producción |
+| RNF-09 | Retención de telemetría | 12 meses | Política de TimescaleDB | No implementado (sin telemetría) |
+| RNF-10 | Logs estructurados (JSON) | Binario | Revisión de código | No verificado |
+| RNF-11 | LCP móvil en P1 y P2 | < 2,5 s (4G) | Lighthouse (perfil móvil) | Parcial: `/login` mide 1,4–1,5 s; P1 y P2 sin medir |
+| RNF-12 | INP en P1 y P2 | < 200 ms | Chrome DevTools (indicio en laboratorio: TBT < 200 ms) | No verificado |
+| RNF-13 | JavaScript inicial | < 200 KB gzip | `npm run check:bundle` | **Cumple**: 63,9 KB |
+| RNF-14 | P1 y P2 en pantallas < 400 px | Sin scroll horizontal de página y objetivos táctiles ≥ 48 px | Revisión manual y Playwright (pendiente) | Diseñado ([wireframes móviles](docs/diseno/wireframes/)), no implementado |
+
 ## 3. Non-Goals (Límites del Alcance)
 - **NG-01:** No se integrará hardware IoT real: los datos de sensores se simulan con un generador de eventos software.
 - **NG-02:** No se implementarán modelos de machine learning para mantenimiento predictivo (heurística por umbrales; ML es trabajo futuro).
 - **NG-03:** No se certificará cumplimiento normativo minero provincial.
 - **NG-04:** Sin soporte multi-idioma ni multi-moneda (operación Argentina únicamente).
 - **NG-05:** La extracción del módulo de Telemetría como microservicio independiente queda fuera de esta etapa (el diseño modular lo preserva, no lo ejecuta).
+- **NG-06:** La interfaz web no ofrece modo offline con escritura (sin cola de sincronización ni asignación de turnos sin conexión). Motivo y condiciones de reapertura: [`offline-sync.md`](docs/arquitectura/offline-sync.md).
+- **NG-07:** No se publica un despliegue productivo ni imágenes de producción (Dockerfile multi-stage) en esta etapa; la entrega es una demostración local. Motivo y trabajo futuro: [`deploy.md`](docs/deploy/deploy.md), sección 7.
 
 ## 4. Stack Tecnológico y Restricciones
-- Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger (la CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7).
+- Backend: Node.js 24 LTS + TypeScript + NestJS, API REST documentada con OpenAPI/Swagger. El contrato de la frontera frontend↔backend es [`docs/arquitectura/api-contracts.yaml`](docs/arquitectura/api-contracts.yaml) (ADR-005); todo endpoint nuevo se declara ahí antes de implementarse. La CI y las pruebas requieren Node ≥ 24.9; ver R-05 en la sección 7.
 - Frontend: React 18 + TypeScript + Vite, TailwindCSS, Zustand, Leaflet/OpenStreetMap, Recharts.
 - Persistencia: PostgreSQL 16 + TimescaleDB (hypertable para TELEMETRY_READING), ORM TypeORM; Redis (cache + BullMQ).
 - Mensajería: MQTT (Eclipse Mosquitto), tópicos `telemetry/+/data`.
@@ -42,6 +65,19 @@ tablero de indicadores.
 - Git Flow institucional: `feature/*` → `develop` → `main`, con PR y 1 aprobación.
 
 ## 5. Contratos de Datos / Tipos
+> Los esquemas de las respuestas y pedidos de la API están en [`api-contracts.yaml`](docs/arquitectura/api-contracts.yaml) (`components.schemas`). Los tipos de abajo son el modelo de dominio; la tabla los relaciona por nombre.
+
+| Tipo de la SPEC | Esquema OpenAPI | Observación |
+|---|---|---|
+| `Vehiculo` | `VehicleAvailability`, `FleetAlert` (parciales) | Aún no hay esquema propio de `Vehiculo`: sus endpoints (`/vehicles`) están pendientes en el contrato |
+| `UmbralMantenimiento` | — | Endpoint `PUT /maintenance/thresholds/{vehicleTypeId}` pendiente en el contrato |
+| `Operador` | `OperatorAvailability` (parcial) | `/operators` pendiente en el contrato |
+| `AsignacionTurno` | `ShiftAssignment`, `AssignShiftRequest`, `ShiftAssignmentStatus`, `ShiftType` | Cubierto |
+| Alertas de flota (RF-05) | `FleetAlert`, `FleetAlertStatus`, `VehicleStatus` | Cubierto |
+| Sesión (RF-01) | `LoginRequest`, `LoginResponse`, `UserRole` | Cubierto |
+| Errores | `ErrorResponse` | Cubierto |
+| `TipoVehiculo`, `LecturaTelemetria`, `RegistroMantenimiento` | — | Sin endpoint implementado |
+
 ```typescript
 // Entidades principales derivadas del modelo ER de PP2 (3FN)
 interface Vehiculo { id: number; patente: string; tipoId: number; estado: 'ACTIVE' | 'MAINTENANCE' | 'OUT_OF_SERVICE'; horasUltimoServicio: number; }
@@ -54,14 +90,14 @@ interface LecturaTelemetria {                                        // TELEMETR
 }
 interface RegistroMantenimiento { id: number; vehiculoId: number; tipo: string; fecha: Date; costo: number; repuestos: string; responsableId: number; }
 interface Operador { id: number; nombreCompleto: string; legajo: string; activo: boolean; }  // OPERATOR (chofer; no inicia sesión)
-interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; fecha: string; turno: 'MORNING' | 'AFTERNOON' | 'NIGHT'; estado: 'ASSIGNED' | 'CANCELLED'; }  // SHIFT_ASSIGNMENT
+interface AsignacionTurno { id: number; vehiculoId: number; operadorId: number; fecha: string; turno: 'MORNING' | 'AFTERNOON' | 'NIGHT'; estado: 'ASSIGNED' | 'CANCELLED'; canceladoPorId: number | null; }  // SHIFT_ASSIGNMENT
 ```
 ## 6. Criterios de Aceptación
-- [ ] **CA-01:** Un usuario válido obtiene JWT y accede solo a los módulos de su rol (RF-01/02).
+- [x] **CA-01:** Un usuario válido obtiene JWT y accede solo a los módulos de su rol (RF-01/02). *Evidencia: pruebas de RF-01 y RF-02.*
 - [ ] **CA-02:** Un mensaje MQTT publicado en telemetry/+/data se persiste y su posición aparece en el mapa (RF-03/04).
 - [x] **CA-03:** Superado el 90%/100% del umbral de horas, el sistema genera alerta WARNING/CRITICAL (RF-05).
 - [ ] **CA-04:** La ingesta soporta ≥ 50 msg/s con p95 < 300 ms en consultas principales (RNF-01/02).
-- [ ] **CA-05:** Cobertura de pruebas backend ≥ 70% en módulos críticos (RNF-07).
+- [x] **CA-05:** Cobertura de pruebas backend ≥ 70% en módulos críticos (RNF-07). *Evidencia: `npm run test:cov` del 2026-11-17; «módulos críticos» = `auth`, `maintenance`, `shifts` y `vehicles`.*
 - [ ] **CA-06:** Todo el stack levanta con docker compose up en un entorno limpio (RNF-08).
 - [x] **CA-07:** Las pantallas P1 y P2 se operan solo con teclado y cumplen contraste AA (RF-12).
 
@@ -147,11 +183,30 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | R-01 | Estilo **monolito modular**: un único servicio de aplicación (`api`) con módulos por dominio; un módulo solo consume el servicio exportado por otro | [ADR-002](docs/adr/ADR-002-estilo-arquitectonico.md) | Vigente |
 | R-02 | El módulo de **Telemetría** (RF-03) se mantiene aislado para poder extraerlo; su extracción queda fuera de esta etapa | ADR-002 y NG-05 | Vigente (módulo aún no implementado) |
 | R-03 | **PostgreSQL 16 + TimescaleDB** como único motor; todo cambio de esquema por migración TypeORM versionada, sin editar migraciones ya aplicadas | [ADR-003](docs/adr/ADR-003-persistencia.md) | Vigente (hypertable pendiente) |
-| R-04 | Stack declarado: NestJS + TypeScript `strict` en el backend; React + Vite en el frontend; MQTT con Mosquitto; Redis para cache y colas | [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | Vigente (MQTT y Redis pendientes; frontend base implementado, sin pantallas de negocio) |
+| R-04 | Stack declarado: NestJS + TypeScript `strict` en el backend; React + Vite en el frontend; MQTT con Mosquitto; Redis para cache y colas | [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | Vigente (MQTT y Redis pendientes; el frontend tiene login, P1 y P2) |
 | R-05 | La CI, las pruebas y el contenedor de desarrollo usan **Node 24** (Jest 30 con `@nestjs/testing` requiere ≥ 24.9) | `.github/workflows/ci.yml`; `docker-compose.yml` (`node:24-bookworm`); [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) (actualización) | Vigente (alineado) |
 | R-06 | El toolchain Node de desarrollo corre en contenedor Docker, no en el host | ADR-001 | Vigente |
-| R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (v2) | Vigente |
+| R-07 | No se introducen frameworks, bases de datos ni servicios externos sin un ADR aprobado | `.opencoderules` (vFinal) | Vigente |
 | R-08 | Estilado del frontend con **TailwindCSS** y HTML nativo; ninguna librería de componentes sin un ADR nuevo | [ADR-004](docs/adr/ADR-004-stack-ui.md) | Vigente (frontend base implementado) |
+| R-09 | Frontend como **SPA** que consume la API REST; el contrato `api-contracts.yaml` es la fuente de verdad y todo endpoint nuevo se declara ahí **antes** de implementarse | [ADR-005](docs/adr/ADR-005-estrategia-web.md); `.opencoderules` (v3) | Vigente (5 de 13 endpoints `/api/v1` implementados ya están en el contrato) |
+| R-10 | Sin credenciales en el código; toda entrada externa se valida y sanea en el borde; las amenazas conocidas se registran con su estado | `.opencoderules` (v3); [`threat-model-lite.md`](docs/seguridad/threat-model-lite.md) | Vigente (T-06 sesión JWT mitigada parcialmente por ADR-006; pendiente T-13 cabeceras) |
+| R-11 | **Sesión JWT de 1 hora** con aviso 5 minutos antes y nuevo inicio de sesión al vencer; sin refresh token | [ADR-006](docs/adr/ADR-006-politica-de-sesion-jwt.md) | Vigente |
+| R-12 | Para móviles se entrega la **SPA responsive** (mobile-first); sin PWA ni app nativa en esta etapa; presupuestos de rendimiento RNF-11 a RNF-13 | [ADR-007](docs/adr/ADR-007-estrategia-mobile.md) | Vigente (diseño móvil sin implementar, RNF-14) |
+| R-13 | La CI protege `develop` y `main`: lint del contrato OpenAPI, typecheck, lint, pruebas con umbral de cobertura, build, presupuesto de peso del JavaScript y auditoría de dependencias de producción. **Un PR con la CI en rojo no se mergea** | `.github/workflows/ci.yml`; [`dependencias-riesgo-aceptado.md`](docs/auditoria/dependencias-riesgo-aceptado.md) | Vigente (la protección de rama se configura en GitHub; no verificable desde el repositorio) |
+
+### 7.1 Trazabilidad ADR ↔ restricciones
+
+| Decisión | Restricciones y requisitos que respalda |
+|---|---|
+| [ADR-001](docs/adr/ADR-001-stack-tecnologico.md) | R-04, R-05, R-06 |
+| [ADR-002](docs/adr/ADR-002-estilo-arquitectonico.md) | R-01, R-02 |
+| [ADR-003](docs/adr/ADR-003-persistencia.md) | R-03 |
+| [ADR-004](docs/adr/ADR-004-stack-ui.md) | R-08 |
+| [ADR-005](docs/adr/ADR-005-estrategia-web.md) | R-09 |
+| [ADR-006](docs/adr/ADR-006-politica-de-sesion-jwt.md) | R-11; R-10 (T-06) |
+| [ADR-007](docs/adr/ADR-007-estrategia-mobile.md) | R-12; RNF-11 a RNF-14; NG-06 |
+| NG-07 ([`deploy.md`](docs/deploy/deploy.md) §7) | RNF-08 (parcial) |
+| `.opencoderules` (vFinal) | R-07, R-09, R-10, R-13 |
 
 ## 8. Changelog
 
@@ -175,3 +230,13 @@ Feature: Accesibilidad básica de P1 y P2 (RF-12)
 | v3 | 2026-11-14 | Sección 6.1: la pantalla P2 (RF-07) está implementada en el frontend: fecha y turno, vehículos y operadores con su disponibilidad y motivo de bloqueo, confirmación, deshacer y manejo de conflicto (409), permisos (403) y error de red. Alta de operadores por interfaz queda fuera del Sprint 2 (se usa `POST /api/v1/operators`) | Sprint 2: interfaz crítica P2 |
 | v3 | 2026-11-14 | Se marcan RF-05, RF-07, RF-12, CA-03 y CA-07 como cumplidos, con la evidencia de `docs/pruebas/reporte-sprint2.md`. CA-05 queda sin marcar (cobertura parcial) y CA-01 también (sin tests unitarios de login). El mensaje de rol sin permiso en P2 se alinea con el escenario de la sección 6.1 | Sprint 2: reporte de pruebas |
 | v3 | 2026-11-15 | Auditoría del Sprint 2 (`docs/auditoria/auditoria-sprint2.md`): estado de los 18 hallazgos del Sprint 1 y hallazgos nuevos. Sin cambios de requisitos | Sprint 2: auditoría |
+| v4 | 2026-11-15 | Encabezado: la versión pasaba de v2 a v4 (indicaba v2 aunque el changelog ya tenía filas v3) | TP4: corregir un encabezado desactualizado |
+| v4 | 2026-11-15 | Sección 4: se nombra `api-contracts.yaml` como contrato de la API. Sección 5: tabla que relaciona los tipos con los esquemas OpenAPI y marca lo pendiente | TP4: contratos de datos por nombre |
+| v4 | 2026-11-15 | Sección 7: R-07 cita `.opencoderules` (v3); nuevas R-09 (SPA y contrato primero, ADR-005) y R-10 (seguridad, modelo de amenazas) | TP4: arnés v3 y decisiones de arquitectura web |
+| v4 | 2026-11-15 | Sección 5: `AsignacionTurno` agrega `canceladoPorId` (columna `cancelled_by_id`, nullable). Sección 7: R-10 actualizada (T-05, T-11 y T-15 resueltas) | Sprint 3: mitigaciones de seguridad; hallazgo N-05 y RF-11 |
+| v5 | 2026-11-16 | Nueva sección 2.1 (Requisitos No Funcionales): RNF-01 a RNF-10 del informe PP2 con su numeración original, y RNF-11 a RNF-14 nuevos (rendimiento y uso móvil), cada uno con su forma de verificación y su estado real | TP5: CA-04, CA-05 y CA-06 citaban RNF que la SPEC no definía (anunciado en la v2) |
+| v5 | 2026-11-16 | Nuevo NG-06 (sin modo offline con escritura) | TP5: Non-Goal justificado en `docs/arquitectura/offline-sync.md` |
+| v5 | 2026-11-16 | Sección 7: nuevas R-11 (sesión JWT, ADR-006) y R-12 (estrategia móvil, ADR-007); R-10 actualizada (T-06 mitigada parcialmente) | ADR-006 se mergeó (PR #62) sin reflejarse en la SPEC; TP5 |
+| v5.1 | 2026-11-16 | Nuevo NG-07 (sin despliegue productivo ni Dockerfile; demo local) | Sprint 3: `docs/deploy/deploy.md` |
+| vFinal | 2026-11-17 | Versión congelada para la defensa. Se marcan RF-01, RF-02, CA-01 y CA-05 con su evidencia; RNF-07 pasa a «Cumplido por módulo crítico» con las cifras de `npm run test:cov` | Cierre: las pruebas de autenticación del PR #60 y la cobertura por módulo permiten cerrarlos |
+| vFinal | 2026-11-17 | Sección 7: R-04 actualizada (el frontend ya tiene P1 y P2), R-07 cita el arnés vFinal, nueva R-13 (CI protege las ramas) y nueva sección 7.1 (trazabilidad ADR ↔ restricciones) | TP6: arnés final y pipeline; cada ADR queda ligado a lo que respalda |

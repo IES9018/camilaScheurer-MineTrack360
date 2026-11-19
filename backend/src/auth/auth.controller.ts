@@ -7,7 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService, LoginResponse } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
@@ -22,11 +22,11 @@ export class AuthController {
 
   /**
    * Inicio de sesión (RF-01). Limitado a 5 intentos por minuto y por IP
-   * para mitigar ataques de fuerza bruta (informe, sección 6.3.5).
+   * para mitigar ataques de fuerza bruta (informe, sección 6.3.5). El guard
+   * de límite es global (AppModule); aquí solo se endurece el valor.
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Iniciar sesión y obtener un token JWT' })
   login(@Body() dto: LoginDto): Promise<LoginResponse> {

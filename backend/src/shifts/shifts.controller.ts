@@ -73,7 +73,10 @@ export class ShiftsController {
   @ApiOkResponse({ type: ShiftAssignmentDto })
   @ApiNotFoundResponse({ description: 'La asignación no existe' })
   @ApiConflictResponse({ description: 'La asignación ya estaba cancelada' })
-  cancel(@Param('id', ParseIntPipe) id: number): Promise<ShiftAssignmentDto> {
-    return this.shiftsService.cancel(id);
+  cancel(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<ShiftAssignmentDto> {
+    return this.shiftsService.cancel(id, user.sub);
   }
 }
