@@ -149,7 +149,7 @@ export function FleetAlertsPage() {
             <button
               type="button"
               onClick={() => reload()}
-              className="mt-3 rounded bg-brand px-3 py-1 font-medium text-white hover:bg-brand-strong"
+              className="mt-3 rounded bg-brand px-3 py-1 font-medium text-white hover:bg-brand-strong max-md:min-h-12"
             >
               Reintentar
             </button>
@@ -175,7 +175,7 @@ export function FleetAlertsPage() {
             type="button"
             onClick={() => reload()}
             disabled={loading}
-            className="ml-2 rounded border border-line bg-surface px-3 py-1 font-medium text-ink hover:bg-page disabled:opacity-60"
+            className="ml-2 rounded border border-line bg-surface px-3 py-1 font-medium text-ink hover:bg-page disabled:opacity-60 max-md:min-h-12"
           >
             Recargar
           </button>
@@ -192,7 +192,7 @@ export function FleetAlertsPage() {
           <button
             type="button"
             onClick={() => reload()}
-            className="font-semibold underline"
+            className="font-semibold underline max-md:inline-flex max-md:min-h-12 max-md:items-center"
           >
             Reintentar
           </button>
@@ -205,7 +205,7 @@ export function FleetAlertsPage() {
         </p>
       ) : (
         <>
-          <div className="mt-4 flex flex-wrap items-end gap-4">
+          <div className="mt-4 flex flex-wrap items-end gap-4 max-md:flex-col max-md:items-stretch">
             <div>
               <label htmlFor={filterId} className="block font-medium">
                 Filtro
@@ -214,7 +214,7 @@ export function FleetAlertsPage() {
                 id={filterId}
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as StatusFilter)}
-                className="rounded border border-line bg-surface px-2 py-1"
+                className="rounded border border-line bg-surface px-2 py-1 max-md:min-h-12 max-md:w-full"
               >
                 {FILTER_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -231,7 +231,7 @@ export function FleetAlertsPage() {
                 id={sortId}
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortKey)}
-                className="rounded border border-line bg-surface px-2 py-1"
+                className="rounded border border-line bg-surface px-2 py-1 max-md:min-h-12 max-md:w-full"
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -247,11 +247,11 @@ export function FleetAlertsPage() {
           </div>
 
           <div className="mt-4 overflow-x-auto rounded border border-line bg-surface">
-            <table className="w-full text-left">
+            <table className="w-full text-left max-md:block">
               <caption className="sr-only">
                 Estado de mantenimiento de cada vehículo de la flota
               </caption>
-              <thead className="border-b border-line">
+              <thead className="border-b border-line max-md:sr-only">
                 <tr>
                   <th scope="col" className="px-3 py-2">
                     Estado
@@ -270,7 +270,7 @@ export function FleetAlertsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="max-md:block">
                 {visible.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-3 py-4">
@@ -281,16 +281,14 @@ export function FleetAlertsPage() {
                   visible.map((a) => (
                     <tr
                       key={a.vehicleId}
-                      className={
-                        a.vehicleId === selectedId
-                          ? 'border-b border-line bg-page'
-                          : 'border-b border-line'
-                      }
+                      className={`border-b border-line max-md:grid max-md:grid-cols-2 max-md:items-center max-md:gap-x-3 max-md:px-3 max-md:py-2 ${
+                        a.vehicleId === selectedId ? 'bg-page' : ''
+                      }`}
                     >
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 max-md:order-1 max-md:p-0">
                         <StatusBadge status={a.status} />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 max-md:order-3 max-md:p-0">
                         <button
                           type="button"
                           aria-expanded={a.vehicleId === selectedId}
@@ -298,19 +296,23 @@ export function FleetAlertsPage() {
                             opener.current = e.currentTarget;
                             setSelectedId(a.vehicleId);
                           }}
-                          className="font-semibold text-brand underline"
+                          className="font-semibold text-brand underline max-md:inline-flex max-md:min-h-12 max-md:min-w-12 max-md:items-center"
                         >
                           {a.internalCode}
                         </button>
                       </td>
-                      <td className="px-3 py-2">{a.vehicleTypeName}</td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 max-md:order-4 max-md:p-0 max-md:text-right">
+                        {a.vehicleTypeName}
+                      </td>
+                      <td className="px-3 py-2 max-md:order-5 max-md:col-span-2 max-md:p-0 max-md:text-ink-muted max-md:before:content-['Horas_desde_service:_']">
                         {formatHours(a.hoursSinceService)}
                         {a.intervalHours !== null &&
                           ` / ${formatHours(a.intervalHours)}`}{' '}
                         h
                       </td>
-                      <td className="px-3 py-2">{formatPercent(a.ratio)}</td>
+                      <td className="px-3 py-2 max-md:order-2 max-md:p-0 max-md:text-right max-md:font-semibold">
+                        {formatPercent(a.ratio)}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -329,7 +331,7 @@ export function FleetAlertsPage() {
           ref={detailRef}
           tabIndex={-1}
           aria-labelledby="detalle-titulo"
-          className="mt-4 rounded border border-line bg-surface p-4"
+          className="mt-4 rounded border border-line bg-surface p-4 max-md:fixed max-md:inset-0 max-md:z-20 max-md:mt-0 max-md:overflow-y-auto max-md:rounded-none"
         >
           <h2 id="detalle-titulo" className="text-lg font-bold">
             {selected.internalCode} · {selected.vehicleTypeName}
@@ -349,7 +351,7 @@ export function FleetAlertsPage() {
               type="button"
               disabled
               aria-describedby="rf06-nota"
-              className="rounded border border-line px-3 py-1 opacity-60"
+              className="rounded border border-line px-3 py-1 opacity-60 max-md:min-h-12"
             >
               Registrar intervención
             </button>
@@ -359,7 +361,7 @@ export function FleetAlertsPage() {
             <button
               type="button"
               onClick={closeDetail}
-              className="ml-auto rounded border border-line px-3 py-1 font-medium hover:bg-page"
+              className="ml-auto rounded border border-line px-3 py-1 font-medium hover:bg-page max-md:min-h-12"
             >
               Cerrar (Esc)
             </button>

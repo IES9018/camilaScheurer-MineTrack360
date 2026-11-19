@@ -45,7 +45,7 @@ La web responsive gana en los cuatro criterios que fija la consigna (mantenimien
   - Sin aprovechar sensores del teléfono (cámara, GPS propio).
   - Sin app dedicada para choferes (trabajo futuro del informe PP2, §11.2).
 - **Riesgos y deuda declarada:**
-  - **La implementación actual no cumple el diseño móvil.** Los wireframes móviles son el diseño objetivo; hasta implementarlos, RNF-14 figura como «Diseñado, no implementado» en la SPEC.
+  - **La implementación no sigue el diseño móvil al pie de la letra.** Actualización (2026-11-19): P1 y P2 ya están adaptadas y RNF-14 se verifica con `docs/arquitectura/medir-movil.cjs`; las desviaciones respecto de los wireframes están declaradas en `p1-movil.md` y `p2-movil.md`.
   - Los presupuestos de LCP e INP de P1 y P2 **todavía no se midieron**: solo se midió la página de login y el peso del JavaScript (ver presupuestos). La medición real llega con la demo desplegada.
   - Leaflet (RF-04) y Recharts (RF-09) aún no están en el bundle; al sumarlos consumirán el presupuesto de 200 KB, y el script `check:bundle` avisará.
 - **Revisión:** se reabre este ADR a favor de la **PWA** si (a) se mide que los usuarios de campo quedan más de unos minutos sin conexión y piden ver datos, o (b) se pide instalar la aplicación en la pantalla de inicio. Se reabre a favor de **nativa/híbrida** solo si aparece un requisito de push, segundo plano o sensores.

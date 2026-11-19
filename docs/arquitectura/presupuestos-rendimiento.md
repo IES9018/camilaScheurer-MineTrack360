@@ -78,4 +78,4 @@ El archivo `ci.yml` lo edita la estudiante a mano. El paso de Lighthouse sobre `
 |---|---|---|---|
 | LCP | RNF-11 | ADR-007 | Cumple en P1 y P2 en laboratorio emulado (sección 2.1) |
 | INP | RNF-12 | ADR-007 | Indicio favorable en laboratorio (sección 2.1); sin medición de campo |
-| JS inicial | RNF-13 | ADR-007 | **Cumple** (63,9 de 200 KB) |
+| JS inicial | RNF-13 | ADR-007 | **Cumple** (64,2 de 200 KB al 2026-11-19) |
