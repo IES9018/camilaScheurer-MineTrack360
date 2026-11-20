@@ -136,11 +136,23 @@ describe('FleetAlertsPage', () => {
     render(<FleetAlertsPage />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'No se pudieron cargar',
+      'No se pudo conectar con el servidor para cargar las alertas. Revisá la conexión.',
     );
     await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
 
     expect(await screen.findByRole('table')).toBeInTheDocument();
+  });
+
+  it('con un error 500 culpa al servidor y no a la conexión', async () => {
+    fetchMock.mockResolvedValue(json(500, { message: 'Internal error' }));
+    render(<FleetAlertsPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('El servidor no pudo cargar las alertas');
+    expect(alert).not.toHaveTextContent('conexión');
+    expect(
+      screen.getByRole('button', { name: 'Reintentar' }),
+    ).toBeInTheDocument();
   });
 
   it('si falla una recarga conserva los datos anteriores y avisa', async () => {

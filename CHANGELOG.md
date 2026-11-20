@@ -4,7 +4,21 @@ Todos los cambios relevantes de MineTrack360 se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionado, [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
-_Sin cambios todavía._
+
+## [0.1.1] - 2026-11-19
+
+Cierre de los hallazgos N-11, N-14, N-15 y N-16 de la auditoría del Sprint 3 (PR #76, #78, #80 y #82). No hay cambios en el backend.
+
+### Added
+- Script `docs/arquitectura/medir-p1-p2.cjs` y medición de P1 y P2 (LCP, TBT, CLS) en laboratorio emulado, registrada en `docs/arquitectura/presupuestos-rendimiento.md` (cierra parcialmente N-15).
+- Script `docs/arquitectura/medir-movil.cjs`: verifica a 360 px que P1 y P2 no tengan scroll horizontal y que todos sus controles midan ≥ 48 px (RNF-14).
+- Contrato OpenAPI: los 8 endpoints que faltaban (`GET /auth/me`, `GET/POST /vehicles`, `GET /vehicles/{id}`, `POST /maintenance/threshold-evaluation`, `PUT /maintenance/thresholds/{vehicleTypeId}`, `GET/POST /operators`), con sus esquemas y roles; ahora cubre los 13 (cierra N-14).
+
+### Changed
+- **P1 y P2 adaptadas a móvil** (cierra N-16): en pantallas angostas la tabla de P1 se muestra como tarjetas, el detalle ocupa toda la pantalla, los controles miden ≥ 48 px y el resumen con «Confirmar» de P2 queda fijo abajo. Solo cambian clases de Tailwind; no se agregan dependencias.
+
+### Fixed
+- P1 y P2 ya no culpan a la conexión ante cualquier error al cargar datos (cierra N-11): sin respuesta del servidor se pide revisar la conexión; si el servidor responde con un error (500, etc.) se dice que falló el servidor. Nuevo `shared/api/loadFailure.ts` con sus tests.
 
 ## [0.1.0] - 2026-11-17
 Primera versión etiquetada: demostración local del núcleo del sistema (autenticación por roles, alertas de mantenimiento y asignación de turnos), con seguridad aplicada, contrato de API, CI y documentación de arquitectura. No incluye telemetría, mapa ni tablero (ver «Alcance de esta versión»).
@@ -43,5 +57,6 @@ Primera versión etiquetada: demostración local del núcleo del sistema (autent
 ### Alcance de esta versión
 No implementado: RF-03 (ingesta MQTT), RF-04 (mapa), RF-06 (registro de intervenciones), RF-08 (incidentes de velocidad), RF-09 (tablero), RF-10 (exportación) y RF-11 completo (auditoría de operaciones). Tampoco hay despliegue productivo (NG-07), cabeceras de seguridad (T-13) ni la versión móvil de P1 y P2 (RNF-14). El detalle y los motivos están en `SPEC.md` y en `docs/auditoria/auditoria-sprint3.md`.
 
-[Unreleased]: https://github.com/IES9018/camilaScheurer-MineTrack360/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/IES9018/camilaScheurer-MineTrack360/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/IES9018/camilaScheurer-MineTrack360/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/IES9018/camilaScheurer-MineTrack360/releases/tag/v0.1.0

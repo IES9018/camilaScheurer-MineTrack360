@@ -13,10 +13,10 @@ Sistema de gestión de flotas para logística minera con IoT y mantenimiento pre
 - Contenedores: Docker + Docker Compose
 
 ## Estado del proyecto
-**Versión 0.1.0** (cierre de PP3/ADI 2026). Ver [`CHANGELOG.md`](CHANGELOG.md).
+**Versión 0.1.1** (cierre de PP3/ADI 2026). Ver [`CHANGELOG.md`](CHANGELOG.md).
 
-- **Implementado:** autenticación JWT con sesión de 1 hora y aviso de vencimiento, roles, vehículos, alertas de mantenimiento por umbral (RF-05), asignación de turnos (RF-07) y las pantallas P1 y P2, con mitigaciones de seguridad (límite de pedidos, validación, contrato OpenAPI) y CI.
-- **No implementado:** telemetría MQTT y mapa (RF-03, RF-04), resto de los requisitos listados en el CHANGELOG, despliegue productivo (NG-07) y adaptación móvil de las pantallas (solo diseñada, ADR-007).
+- **Implementado:** autenticación JWT con sesión de 1 hora y aviso de vencimiento, roles, vehículos, alertas de mantenimiento por umbral (RF-05), asignación de turnos (RF-07) y las pantallas P1 y P2 (adaptadas a móvil desde la v0.1.1), con mitigaciones de seguridad (límite de pedidos, validación, contrato OpenAPI) y CI.
+- **No implementado:** telemetría MQTT y mapa (RF-03, RF-04), resto de los requisitos listados en el CHANGELOG, despliegue productivo (NG-07) y cabeceras de seguridad (T-13).
 - **Documentación:** [`SPEC.md`](SPEC.md) (requisitos y changelog), `docs/adr/`, `docs/auditoria/`, [`docs/deploy/deploy.md`](docs/deploy/deploy.md) (demo local paso a paso) y [`docs/postmortem-cuatrimestre.md`](docs/postmortem-cuatrimestre.md).
 
 ## Cómo levantar el entorno de desarrollo

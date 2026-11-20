@@ -1,6 +1,8 @@
 # P1 — Estado de flota y alertas: versión móvil (< 400 px)
 
-> **Estado:** diseño objetivo (TP5, ADR-007). **No está implementado**: la pantalla actual (`frontend/src/features/fleet-alerts`) muestra una tabla con scroll horizontal y botones de alto ≈ 34 px (estimado por las clases de Tailwind, no medido en un navegador). Versión de escritorio/tablet: [`p1-estado-flota-alertas.md`](./p1-estado-flota-alertas.md).
+> **Estado:** implementado el 2026-11-19 con desviaciones (N-16). Se verifica con `docs/arquitectura/medir-movil.cjs` a 360 px: sin scroll horizontal y todos los controles ≥ 48 px (laboratorio; sin dispositivo real ni Safari). Versión de escritorio/tablet: [`p1-estado-flota-alertas.md`](./p1-estado-flota-alertas.md).
+>
+> **Desviaciones del diseño:** (1) la tabla sigue siendo una `<table>` y se muestra como tarjetas solo con CSS (por debajo de 768 px); algunos lectores de pantalla pueden perder la semántica de tabla, no se probó. (2) El detalle ocupa toda la pantalla con el botón «Cerrar (Esc)» en lugar de «Volver», y **no atrapa el foco**: con teclado se puede llegar a los controles que quedan debajo. (3) El resumen no se recorta a una línea y el tipo de vehículo aparece a la derecha de la tarjeta.
 > **Requisitos:** RNF-14 (sin scroll horizontal de página y objetivos táctiles ≥ 48 px), RF-12 (teclado y contraste AA se mantienen).
 
 ## Lado a lado

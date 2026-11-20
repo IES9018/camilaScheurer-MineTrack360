@@ -1,6 +1,8 @@
 # P2 — Asignación de turno: versión móvil (< 400 px)
 
-> **Estado:** diseño objetivo (TP5, ADR-007). **No está implementado**: la pantalla actual (`frontend/src/features/shifts`) ya pasa a una columna por debajo de 768 px (`md:grid-cols-2`), pero sus botones tienen alto ≈ 34 px (estimado por clases, no medido) y el botón de confirmar no queda fijo. Versión de escritorio/tablet: [`p2-asignacion-turno.md`](./p2-asignacion-turno.md).
+> **Estado:** implementado el 2026-11-19 con desviaciones (N-16). Se verifica con `docs/arquitectura/medir-movil.cjs` a 360 px: sin scroll horizontal y todos los controles ≥ 48 px (laboratorio; sin dispositivo real ni Safari). Versión de escritorio/tablet: [`p2-asignacion-turno.md`](./p2-asignacion-turno.md).
+>
+> **Desviaciones del diseño:** (1) la barra inferior es el mismo bloque de resumen con `position: sticky`, no una barra aparte. (2) Los mensajes de éxito y error quedan debajo del formulario, no sobre la barra fija, así que pueden requerir desplazarse. (3) El selector de operador sigue siendo la lista de opciones de radio de escritorio.
 > **Requisitos:** RNF-14 (sin scroll horizontal y objetivos táctiles ≥ 48 px), RF-07, RF-12.
 
 ## Lado a lado

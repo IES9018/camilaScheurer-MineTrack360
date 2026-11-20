@@ -33,15 +33,18 @@ export function AppLayout() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <span className="text-lg font-bold">MineTrack360</span>
 
-          <nav aria-label="Principal" className="flex flex-1 gap-4">
+          <nav
+            aria-label="Principal"
+            className="flex flex-1 gap-4 max-md:gap-6"
+          >
             {sectionsFor(user.role).map((section) => (
               <NavLink
                 key={section.id}
                 to={section.path}
                 className={({ isActive }) =>
                   isActive
-                    ? 'font-bold underline underline-offset-4'
-                    : 'hover:underline'
+                    ? 'inline-flex items-center font-bold underline underline-offset-4 max-md:min-h-12'
+                    : 'inline-flex items-center hover:underline max-md:min-h-12'
                 }
               >
                 {section.label}
@@ -56,7 +59,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={clearSession}
-              className="rounded border border-line px-3 py-1 font-medium hover:bg-page"
+              className="rounded border border-line px-3 py-1 font-medium hover:bg-page max-md:min-h-12"
             >
               Cerrar sesión
             </button>
