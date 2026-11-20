@@ -5,6 +5,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-19
+
+Cierre de los hallazgos N-11, N-14, N-15 y N-16 de la auditoría del Sprint 3 (PR #76, #78, #80 y #82). No hay cambios en el backend.
+
 ### Added
 - Script `docs/arquitectura/medir-p1-p2.cjs` y medición de P1 y P2 (LCP, TBT, CLS) en laboratorio emulado, registrada en `docs/arquitectura/presupuestos-rendimiento.md` (cierra parcialmente N-15).
 - Script `docs/arquitectura/medir-movil.cjs`: verifica a 360 px que P1 y P2 no tengan scroll horizontal y que todos sus controles midan ≥ 48 px (RNF-14).
@@ -53,5 +57,6 @@ Primera versión etiquetada: demostración local del núcleo del sistema (autent
 ### Alcance de esta versión
 No implementado: RF-03 (ingesta MQTT), RF-04 (mapa), RF-06 (registro de intervenciones), RF-08 (incidentes de velocidad), RF-09 (tablero), RF-10 (exportación) y RF-11 completo (auditoría de operaciones). Tampoco hay despliegue productivo (NG-07), cabeceras de seguridad (T-13) ni la versión móvil de P1 y P2 (RNF-14). El detalle y los motivos están en `SPEC.md` y en `docs/auditoria/auditoria-sprint3.md`.
 
-[Unreleased]: https://github.com/IES9018/camilaScheurer-MineTrack360/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/IES9018/camilaScheurer-MineTrack360/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/IES9018/camilaScheurer-MineTrack360/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/IES9018/camilaScheurer-MineTrack360/releases/tag/v0.1.0
